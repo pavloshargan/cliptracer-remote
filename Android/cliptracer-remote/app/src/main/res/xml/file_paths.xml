@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Expose all files in external storage directory -->
+    <external-path name="external_files" path="." />
+
+    <external-files-path name="external_files" path="postponedUploads"/>
+
+    <!-- Expose all files in files directory -->
+    <files-path name="files" path="." />
+
+    <!-- Expose all files in cache directory -->
+    <cache-path name="cache" path="." />
+
+    <!-- Expose specific directory in external storage -->
+    <!-- <external-files-path name="external_specific" path="YourSpecificFolder/" /> -->
+</paths>

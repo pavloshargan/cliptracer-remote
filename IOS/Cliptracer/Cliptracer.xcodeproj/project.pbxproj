@@ -1,0 +1,423 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AC9C3F982BC24F1300EDF0AB /* CliptracerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3F972BC24F1300EDF0AB /* CliptracerApp.swift */; };
+		AC9C3F9A2BC24F1300EDF0AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3F992BC24F1300EDF0AB /* ContentView.swift */; };
+		AC9C3F9C2BC24F1600EDF0AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3F9B2BC24F1600EDF0AB /* Assets.xcassets */; };
+		AC9C3F9F2BC24F1600EDF0AB /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3F9E2BC24F1600EDF0AB /* Preview Assets.xcassets */; };
+		AC9C3FA82BC251D000EDF0AB /* CentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FA72BC251D000EDF0AB /* CentralManager.swift */; };
+		AC9C3FAA2BC251DD00EDF0AB /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FA92BC251DD00EDF0AB /* Peripheral.swift */; };
+		AC9C3FAC2BC251EB00EDF0AB /* Peripheral+Camera.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FAB2BC251EB00EDF0AB /* Peripheral+Camera.swift */; };
+		AC9C3FAE2BC252D000EDF0AB /* CameraSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FAD2BC252D000EDF0AB /* CameraSelectionView.swift */; };
+		AC9C3FB02BC252E100EDF0AB /* AudioPlayerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FAF2BC252E100EDF0AB /* AudioPlayerBridge.swift */; };
+		AC9C3FB22BC252F300EDF0AB /* ControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FB12BC252F300EDF0AB /* ControlView.swift */; };
+		AC9C3FB52BC2593900EDF0AB /* pulse_audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3FB42BC2593900EDF0AB /* pulse_audio.mp3 */; };
+		AC9C3FB72BC327BD00EDF0AB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3FB62BC26CBF00EDF0AB /* PrivacyInfo.xcprivacy */; };
+		AC9C3FBB2BC6373400EDF0AB /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3FBA2BC6373400EDF0AB /* Launch Screen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		AC9C3F942BC24F1300EDF0AB /* Cliptracer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cliptracer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC9C3F972BC24F1300EDF0AB /* CliptracerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliptracerApp.swift; sourceTree = "<group>"; };
+		AC9C3F992BC24F1300EDF0AB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AC9C3F9B2BC24F1600EDF0AB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AC9C3F9E2BC24F1600EDF0AB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		AC9C3FA72BC251D000EDF0AB /* CentralManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentralManager.swift; sourceTree = "<group>"; };
+		AC9C3FA92BC251DD00EDF0AB /* Peripheral.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Peripheral.swift; sourceTree = "<group>"; };
+		AC9C3FAB2BC251EB00EDF0AB /* Peripheral+Camera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Peripheral+Camera.swift"; sourceTree = "<group>"; };
+		AC9C3FAD2BC252D000EDF0AB /* CameraSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraSelectionView.swift; sourceTree = "<group>"; };
+		AC9C3FAF2BC252E100EDF0AB /* AudioPlayerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerBridge.swift; sourceTree = "<group>"; };
+		AC9C3FB12BC252F300EDF0AB /* ControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlView.swift; sourceTree = "<group>"; };
+		AC9C3FB32BC2557F00EDF0AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		AC9C3FB42BC2593900EDF0AB /* pulse_audio.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = pulse_audio.mp3; sourceTree = "<group>"; };
+		AC9C3FB62BC26CBF00EDF0AB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		AC9C3FBA2BC6373400EDF0AB /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AC9C3F912BC24F1300EDF0AB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AC9C3F8B2BC24F1300EDF0AB = {
+			isa = PBXGroup;
+			children = (
+				AC9C3FB42BC2593900EDF0AB /* pulse_audio.mp3 */,
+				AC9C3F962BC24F1300EDF0AB /* Cliptracer */,
+				AC9C3F952BC24F1300EDF0AB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AC9C3F952BC24F1300EDF0AB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AC9C3F942BC24F1300EDF0AB /* Cliptracer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		AC9C3F962BC24F1300EDF0AB /* Cliptracer */ = {
+			isa = PBXGroup;
+			children = (
+				AC9C3FB32BC2557F00EDF0AB /* Info.plist */,
+				AC9C3FA62BC2513000EDF0AB /* Views */,
+				AC9C3FA52BC2512900EDF0AB /* BLE */,
+				AC9C3F972BC24F1300EDF0AB /* CliptracerApp.swift */,
+				AC9C3FB62BC26CBF00EDF0AB /* PrivacyInfo.xcprivacy */,
+				AC9C3F992BC24F1300EDF0AB /* ContentView.swift */,
+				AC9C3F9B2BC24F1600EDF0AB /* Assets.xcassets */,
+				AC9C3FBA2BC6373400EDF0AB /* Launch Screen.storyboard */,
+				AC9C3F9D2BC24F1600EDF0AB /* Preview Content */,
+			);
+			path = Cliptracer;
+			sourceTree = "<group>";
+		};
+		AC9C3F9D2BC24F1600EDF0AB /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				AC9C3F9E2BC24F1600EDF0AB /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		AC9C3FA52BC2512900EDF0AB /* BLE */ = {
+			isa = PBXGroup;
+			children = (
+				AC9C3FA72BC251D000EDF0AB /* CentralManager.swift */,
+				AC9C3FA92BC251DD00EDF0AB /* Peripheral.swift */,
+				AC9C3FAB2BC251EB00EDF0AB /* Peripheral+Camera.swift */,
+			);
+			path = BLE;
+			sourceTree = "<group>";
+		};
+		AC9C3FA62BC2513000EDF0AB /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AC9C3FAD2BC252D000EDF0AB /* CameraSelectionView.swift */,
+				AC9C3FAF2BC252E100EDF0AB /* AudioPlayerBridge.swift */,
+				AC9C3FB12BC252F300EDF0AB /* ControlView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AC9C3F932BC24F1300EDF0AB /* Cliptracer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AC9C3FA22BC24F1600EDF0AB /* Build configuration list for PBXNativeTarget "Cliptracer" */;
+			buildPhases = (
+				AC9C3F902BC24F1300EDF0AB /* Sources */,
+				AC9C3F912BC24F1300EDF0AB /* Frameworks */,
+				AC9C3F922BC24F1300EDF0AB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Cliptracer;
+			productName = Cliptracer;
+			productReference = AC9C3F942BC24F1300EDF0AB /* Cliptracer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AC9C3F8C2BC24F1300EDF0AB /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					AC9C3F932BC24F1300EDF0AB = {
+						CreatedOnToolsVersion = 15.3;
+					};
+				};
+			};
+			buildConfigurationList = AC9C3F8F2BC24F1300EDF0AB /* Build configuration list for PBXProject "Cliptracer" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AC9C3F8B2BC24F1300EDF0AB;
+			productRefGroup = AC9C3F952BC24F1300EDF0AB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				AC9C3F932BC24F1300EDF0AB /* Cliptracer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AC9C3F922BC24F1300EDF0AB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC9C3F9F2BC24F1600EDF0AB /* Preview Assets.xcassets in Resources */,
+				AC9C3F9C2BC24F1600EDF0AB /* Assets.xcassets in Resources */,
+				AC9C3FB72BC327BD00EDF0AB /* PrivacyInfo.xcprivacy in Resources */,
+				AC9C3FBB2BC6373400EDF0AB /* Launch Screen.storyboard in Resources */,
+				AC9C3FB52BC2593900EDF0AB /* pulse_audio.mp3 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AC9C3F902BC24F1300EDF0AB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC9C3FAE2BC252D000EDF0AB /* CameraSelectionView.swift in Sources */,
+				AC9C3F9A2BC24F1300EDF0AB /* ContentView.swift in Sources */,
+				AC9C3FAC2BC251EB00EDF0AB /* Peripheral+Camera.swift in Sources */,
+				AC9C3FB02BC252E100EDF0AB /* AudioPlayerBridge.swift in Sources */,
+				AC9C3F982BC24F1300EDF0AB /* CliptracerApp.swift in Sources */,
+				AC9C3FA82BC251D000EDF0AB /* CentralManager.swift in Sources */,
+				AC9C3FAA2BC251DD00EDF0AB /* Peripheral.swift in Sources */,
+				AC9C3FB22BC252F300EDF0AB /* ControlView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AC9C3FA02BC24F1600EDF0AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		AC9C3FA12BC24F1600EDF0AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AC9C3FA32BC24F1600EDF0AB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Cliptracer/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = DW637TJWU3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Cliptracer/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = " This will allow Cliptracer\" to find and connect to bluetooth devices";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cliptracer.cliptracer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "cliptracer-dev";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		AC9C3FA42BC24F1600EDF0AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Cliptracer/Preview Content\"";
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = DW637TJWU3;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Cliptracer/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.sports";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = " This will allow Cliptracer\" to find and connect to bluetooth devices";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
+				INFOPLIST_KEY_UIRequiresFullScreen = YES;
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cliptracer.cliptracer;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "cliptracer-prod";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AC9C3F8F2BC24F1300EDF0AB /* Build configuration list for PBXProject "Cliptracer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC9C3FA02BC24F1600EDF0AB /* Debug */,
+				AC9C3FA12BC24F1600EDF0AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AC9C3FA22BC24F1600EDF0AB /* Build configuration list for PBXNativeTarget "Cliptracer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC9C3FA32BC24F1600EDF0AB /* Debug */,
+				AC9C3FA42BC24F1600EDF0AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AC9C3F8C2BC24F1300EDF0AB /* Project object */;
+}
