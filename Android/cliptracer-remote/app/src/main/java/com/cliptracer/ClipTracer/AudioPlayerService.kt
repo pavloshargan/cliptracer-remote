@@ -39,8 +39,6 @@ class SilentAudioService : Service() {
     private var mediaSession: MediaSessionCompat? = null
     private var wakeLock: WakeLock? = null
     private val handler = Handler(Looper.getMainLooper())
-    private var rewindRunnable: Runnable? = null
-
     var playerArtistText: String = "Not connected"
     var playerTitleText: String = "Not connected"
 
@@ -116,10 +114,24 @@ class SilentAudioService : Service() {
         }
     }
 
+    fun seekToZeroOnStartRecording(){
+        mediaPlayer?.let { player ->
+            if (player.isPlaying) {
+                updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
+                handler.postDelayed({
+                    player.seekTo(0) // Rewind to the beginning
+                    updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
+                }, 100) // Adjust this delay as needed
+
+            }
+
+        }
+    }
     fun pauseIfNotYet(){
         mediaPlayer?.let { player ->
             if (player.isPlaying) {
                 player.pause()
+                player.seekTo(0) // Rewind to the beginning
                 updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
             }
         }
@@ -313,7 +325,7 @@ class SilentAudioService : Service() {
     fun updateMetadataAndNotification(artist: String, title: String) {
         playerArtistText = artist
         playerTitleText = title
-
+        appBusinessLogic?.populateHealthState()
         // Update the metadata for the MediaSession
         val metadata = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
@@ -380,9 +392,6 @@ class SilentAudioService : Service() {
         // Stop Runnables to prevent them from running after resources are released
         stopUpdatingPlaybackState()
         stopplaySongRunnable()
-        rewindRunnable?.let { handler.removeCallbacks(it) }
-        rewindRunnable = null // Nullify after removing callbacks
-
         // Release and nullify the MediaPlayer
         try {
             mediaPlayer?.stop()

@@ -35,7 +35,9 @@ data class HealthState(
     var showTriggerOverlay: Boolean = false,
     var triggerOverlayText: String = "",
     var showBluetoothDevicesScreen: Boolean = true,
-    val bluetoothDeviceList: List<ScanResult> = listOf()
+    val bluetoothDeviceList: List<ScanResult> = listOf(),
+    val artist: String = "",
+    val title: String = ""
     )
 
 @SuppressLint("MissingPermission")
@@ -91,7 +93,7 @@ class AppBusinessLogic(
     var showBluetoothDevicesScreen = (!bleConnected)
 
 
-    private fun populateHealthState(){
+    fun populateHealthState(){
         synchronized(healthStateUpdatelock) {
             val newHealthState = HealthState(
                 settings = settingsManager.settings,
@@ -103,7 +105,9 @@ class AppBusinessLogic(
                 showTriggerOverlay = showTriggerOverlay,
                 triggerOverlayText = triggerOverlayText,
                 showBluetoothDevicesScreen = showBluetoothDevicesScreen,
-                bluetoothDeviceList = goproBleManager.ble.foundDevices
+                bluetoothDeviceList = goproBleManager.ble.foundDevices,
+                artist = goproBleManager.silentAudioService?.playerArtistText ?: "",
+                title = goproBleManager.silentAudioService?.playerTitleText ?: "",
             )
                 _healthState.value = newHealthState
             }
@@ -171,7 +175,6 @@ class AppBusinessLogic(
                     goproBleManager.connectGoProCached(DataStore.lastConnectedGoProBLEMac!!, DataStore.currentGoProBLEName?:"")
                 }
                 else{
-                    populateHealthState()
                     Log.d("","goproConnect")
                     goproBleManager.connectGoPro(settingsManager.settings["target_gopro"]?:"any")
                 }
@@ -267,7 +270,10 @@ class AppBusinessLogic(
         Log.d("","gopro disconnected handler")
         currentGoPro = ""
         bleConnected = false
-        showBluetoothDevicesScreen = true
+        if(!DataStore.intentiousSleep)
+        {
+            showBluetoothDevicesScreen = true
+        }
 
     }
 
@@ -275,6 +281,8 @@ class AppBusinessLogic(
     fun startRecording() {
         GOPRO_QUERYING_INTERVAL = 1000
         CoroutineScope(Dispatchers.Main).launch {
+            goproBleManager.titleText = "Starting"
+            goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, "Starting")
             goproBleManager.silentAudioService?.playIfNotYet()
         }
         CoroutineScope(Dispatchers.IO).launch {
@@ -285,6 +293,8 @@ class AppBusinessLogic(
     fun stopRecording(){
         GOPRO_QUERYING_INTERVAL = GOPRO_DEFAULT_QUERYING_INTERVAL
         CoroutineScope(Dispatchers.Main).launch {
+            goproBleManager.titleText = "Stopping"
+            goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, "Stopping")
             goproBleManager.silentAudioService?.pauseIfNotYet()
             Handler(Looper.getMainLooper()).postDelayed({
                 goproPowerOff()
@@ -306,6 +316,7 @@ class AppBusinessLogic(
             try {
                 goproBleManager.goproPowerOff()?.let { file ->
                     DataStore.intentiousSleep = true
+                    goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, "In sleep")
                     // Handle the result of the connection here
                 }
             } catch (e: Exception) {

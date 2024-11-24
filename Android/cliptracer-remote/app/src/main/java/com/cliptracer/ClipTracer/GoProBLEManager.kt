@@ -46,19 +46,14 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
 
     var silentAudioService: SilentAudioService? = null
 
+    var goproToConnect: ScanResult? = null
 
-    public var goproToConnect: ScanResult? = null
-
-//    private val receivedData: Channel<UByteArray> = Channel()
-    private val receivedResponse: Channel<Response<*>> = Channel()
     private var response: Response<*>? = null
 
-    public var goproVersion: String? = null
-
+    var goproVersion: String? = null
 
     var currentSettings: Response<*>? = null
     var currentStatus: Response<*>? = null
-    var currentDatetimeBytes: UByteArray? = null
 
     var currentSettingsFormatted: Map<String, String> = emptyMap()
     var currentStatusesFormatted: Map<String, String> = emptyMap()
@@ -69,8 +64,8 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
     var statusUpdatedAt = TimeProvider.getUTCTimeMilliseconds()
     var datetimeUpdatedAt = TimeProvider.getUTCTimeMilliseconds()
 
-    var showBluetoothDevicesScreen: Boolean = false
-    var bluetoothDeviceList: Map<String, String> = mapOf()
+    var goproStatusShortened = "-|-|-|-|-"
+    var titleText = "Not Connected"
 
     private enum class Resolution(val value: UByte) {
         RES_4K(1U),
@@ -82,21 +77,15 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
 
         companion object {
             private val valueMap: Map<UByte, Resolution> by lazy { values().associateBy { it.value } }
-
-            fun fromValue(value: UByte) = valueMap.getValue(value)
         }
     }
 
     @SuppressLint("MissingPermission")
     @OptIn(ExperimentalUnsignedTypes::class)
     private fun tlvResponseNotificationHandler(characteristic: UUID, data: UByteArray) {
-//        println("tlvResponseNotificationHandler entered")
 
         GoProUUID.fromUuid(characteristic)?.let { uuid ->
-
-//            CoroutineScope(Dispatchers.IO).launch { receivedData.send(data) }
             response = response ?: Response.fromUuid(uuid)
-
         }
             ?: return // We don't care about non-GoPro characteristics (i.e. the BT Core Battery service)
 
@@ -125,18 +114,18 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                     val cameraDiskSpace =
                         cameraDiskSpaceRaw?.takeIf { it.all { char -> char.isDigit() } }?.toLong()
                             ?.let { format_kb(it) } ?: "-"
-                    val goproStatusShortened =
+                    goproStatusShortened =
                         "${currentSettingsFormatted["resolution"] ?: " - "}|${currentSettingsFormatted["lens"] ?: " - "}|${currentSettingsFormatted["fps"] ?: " - "}|${currentStatusesFormatted["battery_level"] ?: "-"}%|${cameraDiskSpace}"
 
-                    var titleText = ""
-                    if (currentStatusesFormatted["encoding"] == "true"){
+                    if (currentStatusesFormatted["encoding"] == "true" && titleText!="Stopping"){
                         titleText  = "Recording"
                     }
-                    else{
+                    else if (titleText!="Stopping" && titleText!="Starting"){
                         titleText  = "Ready"
                     }
-                    silentAudioService?.updateMetadataAndNotification(goproStatusShortened, titleText)
-
+                    if(!DataStore.intentiousSleep){
+                        silentAudioService?.updateMetadataAndNotification(goproStatusShortened, titleText)
+                    }
                 }
 
                 else if (rspString.contains("\"17\":")) { //key 17 is present for statuses only
@@ -444,6 +433,7 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
             val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
             if (lastConnectedGoProBLEMac != null) {
                 ble.writeCharacteristic(lastConnectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, shutterOnCmd)
+                silentAudioService?.seekToZeroOnStartRecording()
             }
         }
 

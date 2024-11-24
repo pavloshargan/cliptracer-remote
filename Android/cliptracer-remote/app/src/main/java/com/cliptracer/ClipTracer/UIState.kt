@@ -11,7 +11,9 @@ data class UIState(
         showTriggerOverlay = false,
         triggerOverlayText = "",
         showBluetoothDevicesScreen = false,
-        bluetoothDeviceList = mutableListOf()
+        bluetoothDeviceList = mutableListOf(),
+        artist = "Not Connected",
+        title = "Not Connected"
 
     ),
     val showSettings: Boolean = false

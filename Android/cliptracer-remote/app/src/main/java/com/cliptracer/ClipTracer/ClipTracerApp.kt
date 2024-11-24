@@ -357,14 +357,8 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.size(40.dp))
 
-                val cameraDiskSpaceRaw = uiState.healthState.cameraStatus["camera_disk_space"]
-                val cameraDiskSpace =
-                    cameraDiskSpaceRaw?.takeIf { it.all { char -> char.isDigit() } }?.toLong()
-                        ?.let { format_kb(it) } ?: "-"
-                val goproStatusShortened =
-                    "${uiState.healthState.protuneSettings["resolution"] ?: " - "}|${uiState.healthState.protuneSettings["lens"] ?: " - "}|${uiState.healthState.protuneSettings["fps"] ?: " - "}|${uiState.healthState.cameraStatus["battery_level"] ?: "-"}%|${cameraDiskSpace}"
                 Text(
-                    text = goproStatusShortened,
+                    text = uiState.healthState.artist,
                     style = MaterialTheme.typography.titleLarge.copy(),
                     color = Color(0xFFFFA500), // Orange color for the text
                     modifier = Modifier
@@ -372,14 +366,12 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                         .wrapContentWidth(Alignment.CenterHorizontally)
                 )
 
-                if (uiState.healthState.cameraStatus["encoding"] == "true") {
+                TextLabel(
+                    text1 = uiState.healthState.title,
+                    icon1 = Icons.Filled.FiberManualRecord,
+                    scale = 20.sp
+                )
 
-                    TextLabel(
-                        text1 = "recording...",
-                        icon1 = Icons.Filled.FiberManualRecord,
-                        scale = 20.sp
-                    )
-                }
 
 
                 var isRecording by remember { mutableStateOf(false) }
