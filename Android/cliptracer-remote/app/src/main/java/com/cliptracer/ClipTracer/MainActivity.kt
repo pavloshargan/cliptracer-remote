@@ -38,16 +38,6 @@ import com.cliptracer.ClipTracer.ui.theme.ClipTracerTheme
 import kotlinx.coroutines.launch
 
 
-class BootReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
-        if (Intent.ACTION_BOOT_COMPLETED == intent.action) {
-            val launchIntent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-            launchIntent?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(launchIntent)
-        }
-    }
-}
-
 fun hasPermissions(context: Context): Boolean {
     val requiredPermissions = arrayOf(
         android.Manifest.permission.BLUETOOTH_SCAN,
@@ -88,22 +78,22 @@ object DataStore {
     var appVersion: String = "ClipTracer_0.1"
     var session_options = TwoWayDict<Int, String>()
     var goproVersion: String = "HERO10"
+    var intentiousSleep = false
 }
 
 @SuppressLint("MissingPermission")
 class MainActivity : ComponentActivity() {
-    private lateinit var service: SilentAudioService
+    private lateinit var audioService: SilentAudioService
     private var bound: Boolean = false
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             val binder = service as SilentAudioService.LocalBinder
-            this@MainActivity.service = binder.getService()
+            this@MainActivity.audioService = binder.getService()
             bound = true
-
             // Pass the service to AppBusinessLogic
-            appBusinessLogic.setService(this@MainActivity.service)
-            this@MainActivity.service.setAppBusinessLogic(appBusinessLogic)
+            appBusinessLogic.setService(this@MainActivity.audioService)
+            this@MainActivity.audioService.setAppBusinessLogic(appBusinessLogic)
         }
 
         override fun onServiceDisconnected(arg0: ComponentName) {
@@ -191,7 +181,7 @@ class MainActivity : ComponentActivity() {
             }
             startService(stopServiceIntent)
 
-            this@MainActivity.service.cleanupService()
+            this@MainActivity.audioService.cleanupService()
         } else {
             Log.d("MainActivity", "Activity is being destroyed by the system or due to configuration change")
         }

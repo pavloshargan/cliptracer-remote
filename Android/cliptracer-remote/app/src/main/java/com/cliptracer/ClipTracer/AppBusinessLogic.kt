@@ -8,6 +8,8 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.os.StatFs
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -161,7 +163,7 @@ class AppBusinessLogic(
 
     private suspend fun goproCheckReconnect() {
         Log.d("","goproCheckReconnect")
-        if (!bleConnected || DataStore.lastConnectedGoProBLEMac == null ) {
+        if (!DataStore.intentiousSleep && !bleConnected || DataStore.lastConnectedGoProBLEMac == null ) {
             try{
                 if(DataStore.lastConnectedGoProBLEMac != null && settingsManager.settings["target_gopro"] == DataStore.currentGoProBLEName)
                 {
@@ -247,8 +249,15 @@ class AppBusinessLogic(
         bleConnected = true
         showBluetoothDevicesScreen = false
         coroutineScope.launch(Dispatchers.IO) {
-            stopRecording()
-            enableGoProWifi()
+            if(DataStore.intentiousSleep){
+//                delay(1000)
+                DataStore.intentiousSleep = false
+                goproBleManager.startRecording()
+            }
+            else{
+                goproBleManager.stopRecording()
+            }
+//            enableGoProWifi()
             updateTargetGopro(goproName)
         }
         updateSettings(settingsManager.settings)
@@ -265,6 +274,9 @@ class AppBusinessLogic(
 
     fun startRecording() {
         GOPRO_QUERYING_INTERVAL = 1000
+        CoroutineScope(Dispatchers.Main).launch {
+            goproBleManager.silentAudioService?.playIfNotYet()
+        }
         CoroutineScope(Dispatchers.IO).launch {
             goproBleManager.startRecording()
         }
@@ -272,6 +284,12 @@ class AppBusinessLogic(
 
     fun stopRecording(){
         GOPRO_QUERYING_INTERVAL = GOPRO_DEFAULT_QUERYING_INTERVAL
+        CoroutineScope(Dispatchers.Main).launch {
+            goproBleManager.silentAudioService?.pauseIfNotYet()
+            Handler(Looper.getMainLooper()).postDelayed({
+                goproPowerOff()
+            }, 2000)
+        }
         CoroutineScope(Dispatchers.IO).launch {
             goproBleManager.stopRecording()
         }
@@ -287,6 +305,7 @@ class AppBusinessLogic(
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 goproBleManager.goproPowerOff()?.let { file ->
+                    DataStore.intentiousSleep = true
                     // Handle the result of the connection here
                 }
             } catch (e: Exception) {
@@ -377,10 +396,6 @@ class AppBusinessLogic(
     fun updateTargetGopro(targetGopro: String){
         settingsManager.settings["target_gopro"] = targetGopro
         updateSettings(settingsManager.settings)
-    }
-
-    fun restartGopro() {
-        goproPowerOff()
     }
 
     fun setGoProToConnect(gopro: ScanResult){

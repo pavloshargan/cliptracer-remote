@@ -58,7 +58,7 @@ class SilentAudioService : Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.channel_name) // Customize these for your app
             val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val importance = NotificationManager.IMPORTANCE_NONE
             val channel = NotificationChannel("YOUR_CHANNEL_ID2", name, importance).apply {
                 description = descriptionText
             }
@@ -122,10 +122,6 @@ class SilentAudioService : Service() {
                 player.pause()
                 updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
             }
-            appBusinessLogic?.stopRecording()
-            Handler(Looper.getMainLooper()).postDelayed({
-                appBusinessLogic?.goproPowerOff()
-            }, 2000)
         }
     }
     private val playSongRunnable = object : Runnable {
@@ -265,18 +261,18 @@ class SilentAudioService : Service() {
 
 
             override fun onPlay() {
-                if (mediaPlayer != null) {
-                    appBusinessLogic?.startRecording()
-                }
+                println("OnPlay")
+                appBusinessLogic?.startRecording()
             }
 
             override fun onPause() {
-                if (mediaPlayer != null) {
-                    appBusinessLogic?.stopRecording()
-                }
+                println("OnPause")
+                appBusinessLogic?.stopRecording()
+
             }
 
             override fun onStop() {
+                println("OnStop")
                 if (mediaPlayer != null) {
                     mediaPlayer!!.stop()
                     updatePlaybackState(PlaybackStateCompat.STATE_STOPPED)

@@ -434,20 +434,25 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
     @OptIn(ExperimentalUnsignedTypes::class)
     @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
     suspend fun startRecording() {
-        Log.i("","Setting the shutter on")
-        silentAudioService?.playIfNotYet()
-        val shutterOnCmd = ubyteArrayOf(0x03U, 0x01U, 0x01U, 0x01U)
-        val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
-        if (lastConnectedGoProBLEMac != null) {
-            ble.writeCharacteristic(lastConnectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, shutterOnCmd)
+        if(DataStore.intentiousSleep){
+            println("waking up before start recording")
+            connectGoProCached(DataStore.lastConnectedGoProBLEMac!!, DataStore.currentGoProBLEName?:"")
         }
+        else{
+            Log.i("","Setting the shutter on")
+            val shutterOnCmd = ubyteArrayOf(0x03U, 0x01U, 0x01U, 0x01U)
+            val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
+            if (lastConnectedGoProBLEMac != null) {
+                ble.writeCharacteristic(lastConnectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, shutterOnCmd)
+            }
+        }
+
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
     @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
     suspend fun stopRecording() {
         Log.i("","Setting the shutter off")
-        silentAudioService?.pauseIfNotYet()
         val shutterOffCmd = ubyteArrayOf(0x03U, 0x01U, 0x01U, 0x00U)
         val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
         if (lastConnectedGoProBLEMac != null) {
