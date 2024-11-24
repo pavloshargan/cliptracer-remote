@@ -124,8 +124,8 @@ fun BluetoothDevicesScreen(mainIntent: MainIntent, scannedDevices: List<ScanResu
             title = { Text(headerTitle.value) },
         )
 
-        val bleConnected = mainIntent.state.value.healthState.bleConnected
-        val targetGopro = mainIntent.state.value.healthState.settings["target_gopro"]
+        val bleConnected = mainIntent.state.value.businessState.bleConnected
+        val targetGopro = mainIntent.state.value.businessState.settings["target_gopro"]
         val displayText = if (targetGopro == "any") "GoPro devices will appear here." else "Going to autoconnect to ${targetGopro}. You can put the phone in the pocket now."
 
         Box(modifier = Modifier.weight(1f)) {
@@ -174,8 +174,8 @@ fun MainScreen(mainIntent: MainIntent) {
     var currentScreen by remember { mutableStateOf(CurrentScreen.WELCOME) }
 
     // This effect runs every time showBluetoothDevicesScreen changes.
-    LaunchedEffect(mainIntent.state.value.healthState.showBluetoothDevicesScreen) {
-        currentScreen = if (mainIntent.state.value.healthState.showBluetoothDevicesScreen) {
+    LaunchedEffect(mainIntent.state.value.businessState.showBluetoothDevicesScreen) {
+        currentScreen = if (mainIntent.state.value.businessState.showBluetoothDevicesScreen) {
             CurrentScreen.BLUETOOTH_DEVICES
         } else {
             CurrentScreen.MAIN
@@ -188,7 +188,7 @@ fun MainScreen(mainIntent: MainIntent) {
             // Make sure the BluetoothDevicesScreen updates the state to false after connecting to a device
             BluetoothDevicesScreen(
                 mainIntent = mainIntent,
-                scannedDevices = mainIntent.state.value.healthState.bluetoothDeviceList,
+                scannedDevices = mainIntent.state.value.businessState.bluetoothDeviceList,
                 onTap = { tappedDevice ->
                     mainIntent.connectTappedGoPro(tappedDevice)
                     // This might set some state that triggers the LaunchedEffect above
@@ -331,9 +331,9 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
             }
         }
 
-        if (uiState.healthState.showBluetoothDevicesScreen) {
+        if (uiState.businessState.showBluetoothDevicesScreen) {
             BluetoothDevicesScreen(mainIntent = mainIntent,
-                scannedDevices = uiState.healthState.bluetoothDeviceList,
+                scannedDevices = uiState.businessState.bluetoothDeviceList,
                 onTap = { tappedDevice ->
                     mainIntent.connectTappedGoPro(tappedDevice)
                 })
@@ -347,8 +347,8 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                 Spacer(modifier = Modifier.size(20.dp))
 
                 TextLabel(
-                    text1 = uiState.healthState.currentGoPro,
-                    icon1 = if (uiState.healthState.bleConnected) {
+                    text1 = uiState.businessState.currentGoPro,
+                    icon1 = if (uiState.businessState.bleConnected) {
                         Icons.Filled.Bluetooth
                     } else {
                         Icons.Filled.BluetoothDisabled
@@ -358,7 +358,7 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                 Spacer(modifier = Modifier.size(40.dp))
 
                 Text(
-                    text = uiState.healthState.artist,
+                    text = uiState.businessState.artist,
                     style = MaterialTheme.typography.titleLarge.copy(),
                     color = Color(0xFFFFA500), // Orange color for the text
                     modifier = Modifier
@@ -367,7 +367,7 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                 )
 
                 TextLabel(
-                    text1 = uiState.healthState.title,
+                    text1 = uiState.businessState.title,
                     icon1 = Icons.Filled.FiberManualRecord,
                     scale = 20.sp
                 )
@@ -411,10 +411,10 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                     { Text(text = "Highlight") }
                 }
             }
-            if (uiState.healthState.showTriggerOverlay) {
-                AnimatedOverlay(show = true, text = uiState.healthState.triggerOverlayText)
+            if (uiState.businessState.showTriggerOverlay) {
+                AnimatedOverlay(show = true, text = uiState.businessState.triggerOverlayText)
 
-                LaunchedEffect(key1 = uiState.healthState.triggerOverlayText) {
+                LaunchedEffect(key1 = uiState.businessState.triggerOverlayText) {
                 }
             }
         }

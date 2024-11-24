@@ -19,10 +19,10 @@ class MainIntent(private val appBusinessLogic: AppBusinessLogic, private val cor
 
     init {
         CoroutineScope(Dispatchers.Main).launch {
-            appBusinessLogic.healthStateFlow.collect { newHealthState ->
-                newHealthState?.let { nonNullHealthState ->
+            appBusinessLogic.businessStateFlow.collect { newBusinessState ->
+                newBusinessState?.let { nonNullBusinessState ->
                     // Update UI state here with non-null value
-                    _state.value = _state.value.copy(healthState = nonNullHealthState)
+                    _state.value = _state.value.copy(businessState = nonNullBusinessState)
                 }
             }
         }

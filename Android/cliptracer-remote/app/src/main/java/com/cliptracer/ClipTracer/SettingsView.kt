@@ -44,7 +44,7 @@ fun SettingsScreen(mainIntent: MainIntent) {
     BackHandler(enabled = true) {
         mainIntent.setShowSettings(false)
     }
-    val originalSettings = mainIntent.state.value.healthState.settings
+    val originalSettings = mainIntent.state.value.businessState.settings
     var tempSettings by remember { mutableStateOf(originalSettings) }
 
     Scaffold(

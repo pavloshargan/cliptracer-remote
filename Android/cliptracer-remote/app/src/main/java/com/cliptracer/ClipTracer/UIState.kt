@@ -2,7 +2,7 @@ package com.cliptracer.ClipTracer
 
 
 data class UIState(
-    val healthState: HealthState = HealthState(
+    val businessState: BusinessState = BusinessState(
         settings = mapOf(),
         protuneSettings = emptyMap(),
         currentGoPro = "",

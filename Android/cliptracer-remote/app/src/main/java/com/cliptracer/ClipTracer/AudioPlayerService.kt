@@ -325,7 +325,7 @@ class SilentAudioService : Service() {
     fun updateMetadataAndNotification(artist: String, title: String) {
         playerArtistText = artist
         playerTitleText = title
-        appBusinessLogic?.populateHealthState()
+        appBusinessLogic?.populateBusinessState()
         // Update the metadata for the MediaSession
         val metadata = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)

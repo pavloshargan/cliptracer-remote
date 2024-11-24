@@ -25,7 +25,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
 
-data class HealthState(
+data class BusinessState(
     var settings: Map<String, String> = mapOf(),
     var protuneSettings: Map<String, String> = mapOf(),
     var cameraStatus: Map<String, String> = mapOf(),
@@ -51,9 +51,9 @@ class AppBusinessLogic(
         ?: throw IllegalStateException("Context must be a LifecycleOwner")
 
     private val coroutineScope = lifecycleOwner.lifecycleScope
-    private val _healthState = MutableStateFlow<HealthState?>(null)
-    val healthStateFlow: StateFlow<HealthState?> = _healthState.asStateFlow()
-    private val healthStateUpdatelock = Any()
+    private val _businessState = MutableStateFlow<BusinessState?>(null)
+    val businessStateFlow: StateFlow<BusinessState?> = _businessState.asStateFlow()
+    private val businessStateUpdatelock = Any()
 
     private var goproBleManager = GoProBleManager(
         ble,
@@ -91,11 +91,10 @@ class AppBusinessLogic(
     var showTriggerOverlay = false
     var triggerOverlayText = ""
     var showBluetoothDevicesScreen = (!bleConnected)
-
-
-    fun populateHealthState(){
-        synchronized(healthStateUpdatelock) {
-            val newHealthState = HealthState(
+    
+    fun populateBusinessState(){
+        synchronized(businessStateUpdatelock) {
+            val newBusinessState = BusinessState(
                 settings = settingsManager.settings,
                 protuneSettings = goproBleManager.currentSettingsFormatted,
                 cameraStatus = goproBleManager.currentStatusesFormatted,
@@ -109,12 +108,10 @@ class AppBusinessLogic(
                 artist = goproBleManager.silentAudioService?.playerArtistText ?: "",
                 title = goproBleManager.silentAudioService?.playerTitleText ?: "",
             )
-                _healthState.value = newHealthState
+                _businessState.value = newBusinessState
             }
     }
-
-
-
+    
     private suspend fun delayQueryingGoPro(){
         var elapsedTime = 0L
         val checkInterval = 50L
@@ -198,7 +195,7 @@ class AppBusinessLogic(
     fun startPopulatingState(){
         populatingStateJob = coroutineScope.launch(Dispatchers.IO) {
             while (isActive) {
-                populateHealthState()
+                populateBusinessState()
                 delay(500)
             }
         }
@@ -347,7 +344,7 @@ class AppBusinessLogic(
             }
 
             settingsManager.updateSettings(newSettings, updatedOn)
-            populateHealthState()
+            populateBusinessState()
         }
     }
 
@@ -415,7 +412,7 @@ class AppBusinessLogic(
 
     fun updateShowBluetoothDevicesScreen(value: Boolean){
         showBluetoothDevicesScreen = value
-        populateHealthState()
+        populateBusinessState()
     }
 
     fun connectTappedGoPro(gopro: ScanResult)
@@ -431,7 +428,7 @@ class AppBusinessLogic(
             while(showBluetoothDevicesScreen){
                 showBluetoothDevicesScreen
                 Log.d("","goproConnect")
-                populateHealthState()
+                populateBusinessState()
                 goproBleManager.connectGoPro("any")
                 delay(3000)
             }
