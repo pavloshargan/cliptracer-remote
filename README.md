@@ -1,5 +1,5 @@
 # cliptracer-remote
-There were plans to make this a paid app, but I don't have time for that, so feel free to use this in any way you want.
+There were plans to make this a paid app, but I don’t have the time for that. Feel free to use it however you like.
 
 
 IOS and Android implementation of GoPo camera control via Media playback interface. Enables camera control using various devices such as smartwatches, cycling computers, headphones etc.
