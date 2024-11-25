@@ -12,25 +12,25 @@ struct ControlView: View {
     @State private var layoutIndex = 0 // Current index for layout
     @Environment(\.colorScheme) var colorScheme
 
-    @State private var appStartedAt: Date = Date()
-    @State var cameraStatus: CameraStatus?
-    @State var updateTimer: Timer? = nil
-    @State var keepAppAliveTimer: Timer? = nil
-    @State var terminationTimer: Timer? = nil
-    @State var ensurePlayingTimer: Timer? = nil
-    @State var isPlaying = false
-    @State var recordingNow = false
-    @State var recordingStartTime: Date? = nil
-    @State var curTitle = "Not connected"
-    @State var curArtist = "Not connected"
-    @State var stateStr = "Not Connected"
+        @State private var appStartedAt: Date = Date()
+        @State var cameraStatus: CameraStatus?
+        @State var updateTimer: Timer? = nil
+        @State var keepAppAliveTimer: Timer? = nil
+        @State var terminationTimer: Timer? = nil
+        @State var ensurePlayingTimer: Timer? = nil
+        @State var isPlaying = false
+        @State var recordingNow = false
+        @State var recordingStartTime: Date? = nil  // This will hold the start time when the recording begins
+        var recordingSeconds: Int {
+            guard let startTime = recordingStartTime else { return 0 }
+            return Int(Date().timeIntervalSince(startTime))
+        }
+        @State var shutterOn = false // Keeping track of the shutter state
+        @State var curTitle = "Not connected" // Keeping track of the shutter state
+        @State var curArtist = "Not connected" // Keeping track of the shutter state
+        @State var stateStr = "Not Connected"
+        var playerVC: AudioPlayerBridge
 
-    var player: AudioPlayerBridge
-
-    var recordingSeconds: Int {
-        guard let startTime = recordingStartTime else { return 0 }
-        return Int(Date().timeIntervalSince(startTime))
-    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -41,7 +41,7 @@ struct ControlView: View {
                             layoutType: LayoutType.allCases[index],
                             curArtist: $curArtist,
                             curTitle: $curTitle,
-                            player: player,
+                            player: playerVC,
                             colorScheme: colorScheme
                         )
                         .tag(index)
@@ -54,10 +54,17 @@ struct ControlView: View {
             }
         }
         .onAppear {
-            startTimers()
+            playerVC.playSampleSong()
+            self.startUpdatingCameraStatus()
+            self.startKeepingAlive()
+            self.startEnsurePlaying()
         }
         .onDisappear {
-            stopTimers()
+            print("disappered")
+            self.playerVC.peripheral?.disconnect()
+            self.stopUpdatingCameraStatus()
+            self.stopKeepingAlive()
+            self.stopEnsurePlaying()
         }
         .sheet(isPresented: $showingCameraInfo) {
             cameraInfoSheet
@@ -79,42 +86,131 @@ struct ControlView: View {
         }
     }
 
-    func startTimers() {
-        // Start the periodic update timer
-        updateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-            updateStatus()
+        init(player: AudioPlayerBridge) {
+            print("calling view model")
+            print(player)
+            self.playerVC = player
         }
-    }
-
-    func stopTimers() {
-        updateTimer?.invalidate()
-        updateTimer = nil
-    }
-
-    func updateStatus() {
-        print("Updating status...")
-        let elapsedTime = Date().timeIntervalSince(appStartedAt)
-
-        player.peripheral?.requestCameraInfo()
-        if let status = player.peripheral?.status, let settings = player.peripheral?.settings, player.peripheral?.connectionLost == false {
-            curTitle = "\(settings.description) | \(status.description)"
-            curArtist = status.encoding ? "Recording: \(recordingSeconds)s" : status.get_state
-
-            if !recordingNow && status.encoding {
-                recordingStartTime = Date()
-            } else if !status.encoding {
-                recordingStartTime = nil
+    
+        func startUpdatingCameraStatus() {
+            // Initialize the timer to call getCameraStatus every second
+            self.updateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                self.updateStatus()
             }
-            recordingNow = status.encoding
-        } else {
-            curArtist = "Not connected"
         }
-
-        if elapsedTime > 5 && curArtist == "Not connected" {
-            print("Reconnecting...")
-            player.reconnectPeripheral()
+    
+        func stopUpdatingCameraStatus() {
+            // Invalidate the timer when it's no longer needed
+            self.updateTimer?.invalidate()
+            self.updateTimer = nil
         }
-    }
+    
+        func startEnsurePlaying() {
+            // Initialize the timer to call getCameraStatus every second
+            self.ensurePlayingTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+                self.playerVC.ensurePlayingWhenEncoding()
+                self.playerVC.ensureStopped()
+            }
+        }
+    
+        func stopEnsurePlaying() {
+            // Invalidate the timer when it's no longer needed
+            self.ensurePlayingTimer?.invalidate()
+            self.ensurePlayingTimer = nil
+        }
+    
+        func startKeepingAlive() {
+            let timerInterval: TimeInterval = 55
+    
+            self.keepAppAliveTimer = Timer.scheduledTimer(withTimeInterval: timerInterval, repeats: true) { _ in
+                print(self.playerVC.isPlaying)
+                self.playerVC.playForASecond()
+            }
+    
+            let terminationTime: TimeInterval = 5 * 60 * 60
+            self.terminationTimer = Timer.scheduledTimer(withTimeInterval: terminationTime, repeats: false) { _ in
+                self.stopKeepingAlive()
+            }
+        }
+    
+        func stopKeepingAlive() {
+            // Invalidate the keepAppAliveTimer when it's no longer needed
+            self.keepAppAliveTimer?.invalidate()
+            self.keepAppAliveTimer = nil
+    
+            // Also invalidate the terminationTimer
+            self.terminationTimer?.invalidate()
+            self.terminationTimer = nil
+        }
+    
+        func updateStatus() {
+            print("update status attempt")
+            let elapsedTime = Date().timeIntervalSince(appStartedAt)
+            print("update settings debug1")
+    
+            playerVC.peripheral?.requestCameraInfo()
+    
+            let status = playerVC.peripheral?.status
+            let settings = playerVC.peripheral?.settings
+    
+    
+            // Process status
+            if playerVC.peripheral?.connectionLost == false, let status = status, let setting = settings {
+                if playerVC.shutterOnQueued {
+                    playerVC.shutterOnQueuedFinished = true
+                    playerVC.shutterOnQueued = false
+                    playerVC.playPausePressedHandler()
+                }
+                print(status.description)
+                stateStr = "\(setting.description)" + "|" + "\(status.description)"   // <- Fixed here
+                playerVC.updateSongTitle(stateStr)
+                playerVC.updateSongTitle(stateStr)
+                curTitle = stateStr
+    
+                if status.encoding == true && recordingNow == true {
+                    curArtist = formattedTime(recordingSeconds + 1)
+                    playerVC.updateSongArtist(formattedTime(recordingSeconds + 1))
+                } else {
+                    playerVC.updateSongArtist(status.get_state)
+                    curArtist = status.get_state
+                }
+    
+                if !recordingNow && status.encoding {
+                    recordingStartTime = Date()
+                } else if !status.encoding {
+                    recordingStartTime = nil
+                }
+                recordingNow = status.encoding
+    
+            } else if curArtist != "Not connected" {
+                print("update status debug3")
+                curArtist = "sleep"
+                playerVC.updateSongArtist("sleep")
+            }
+    
+            if elapsedTime > 5 && curArtist == "Not connected" {
+                print("Error: CameraStatus was not updated within first 5 seconds, reconnecting")
+                playerVC.reconnectPeripheral()
+            }
+    
+        }
+    
+        func prevSongHandler(){
+            print("prevSong button Handler")
+            DispatchQueue.global(qos: .userInitiated).async {
+                playerVC.prevSongPressedHandler()
+            }
+        }
+        func playPauseHandler(){
+            print("playPause button Handler, player id:")
+            playerVC.playPausePressedHandler()
+        }
+        func nextSongHandler(){
+            print("nextSong button Handler")
+            DispatchQueue.global(qos: .userInitiated).async {
+                playerVC.nextSongPressedHandler()
+            }
+        }
 }
 
 struct LayoutView: View {
