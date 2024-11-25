@@ -81,4 +81,7 @@ class MainIntent(private val appBusinessLogic: AppBusinessLogic, private val cor
     fun addHighlight(){
         appBusinessLogic.addHighlight()
     }
+    fun powerOffOrOn(){
+        appBusinessLogic.powerOffOrOn()
+    }
 }

@@ -13,7 +13,8 @@ data class UIState(
         showBluetoothDevicesScreen = false,
         bluetoothDeviceList = mutableListOf(),
         artist = "Not Connected",
-        title = "Not Connected"
+        title = "Not Connected",
+        recording = false
 
     ),
     val showSettings: Boolean = false

@@ -105,6 +105,9 @@ class SilentAudioService : Service() {
 
     }
 
+    fun isPlaying(): Boolean{
+        return mediaPlayer?.isPlaying ?: false
+    }
     fun playIfNotYet(){
         mediaPlayer?.let { player ->
         if (!player.isPlaying) {
@@ -268,7 +271,7 @@ class SilentAudioService : Service() {
 
             override fun onSkipToPrevious() {
                 print("onSkipToPrevious")
-                appBusinessLogic?.addHighlight()
+                appBusinessLogic?.powerOffOrOn() //power off
             }
 
 

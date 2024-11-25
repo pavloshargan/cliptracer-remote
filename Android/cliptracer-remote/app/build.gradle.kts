@@ -12,8 +12,8 @@ android {
     defaultConfig {
         applicationId = "com.cliptracer.ClipTracer"
         minSdk = 31
-        targetSdk = 33
-        versionCode = 1
+        targetSdk = 34
+        versionCode = 6
         versionName = "ClipTracer_1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -25,7 +25,6 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {

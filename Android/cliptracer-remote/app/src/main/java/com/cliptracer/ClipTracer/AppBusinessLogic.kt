@@ -37,7 +37,8 @@ data class BusinessState(
     var showBluetoothDevicesScreen: Boolean = true,
     val bluetoothDeviceList: List<ScanResult> = listOf(),
     val artist: String = "",
-    val title: String = ""
+    val title: String = "",
+    val recording: Boolean = false
     )
 
 @SuppressLint("MissingPermission")
@@ -98,6 +99,7 @@ class AppBusinessLogic(
                 bluetoothDeviceList = goproBleManager.ble.foundDevices,
                 artist = goproBleManager.silentAudioService?.playerArtistText ?: "",
                 title = goproBleManager.silentAudioService?.playerTitleText ?: "",
+                recording = goproBleManager.silentAudioService?.isPlaying() ?: false
             )
                 _businessState.value = newBusinessState
             }
@@ -239,6 +241,7 @@ class AppBusinessLogic(
         currentGoPro = goproName
         bleConnected = true
         showBluetoothDevicesScreen = false
+        goproBleManager.titleText = "Ready"
         coroutineScope.launch(Dispatchers.IO) {
             if(DataStore.intentiousSleep){
 //                delay(1000)
@@ -270,7 +273,7 @@ class AppBusinessLogic(
         GOPRO_QUERYING_INTERVAL = 1000
         CoroutineScope(Dispatchers.Main).launch {
             goproBleManager.titleText = "Starting"
-            goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, "Starting")
+            goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, goproBleManager.titleText)
             goproBleManager.silentAudioService?.playIfNotYet()
         }
         CoroutineScope(Dispatchers.IO).launch {
@@ -278,15 +281,17 @@ class AppBusinessLogic(
         }
     }
 
-    fun stopRecording(){
+    fun stopRecording(powerOffAfter : Boolean = true){
         GOPRO_QUERYING_INTERVAL = GOPRO_DEFAULT_QUERYING_INTERVAL
         CoroutineScope(Dispatchers.Main).launch {
             goproBleManager.titleText = "Stopping"
-            goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, "Stopping")
             goproBleManager.silentAudioService?.pauseIfNotYet()
-            Handler(Looper.getMainLooper()).postDelayed({
-                goproPowerOff()
-            }, 2000)
+            goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, goproBleManager.titleText)
+            if(powerOffAfter){
+                Handler(Looper.getMainLooper()).postDelayed({
+                    goproPowerOff()
+                }, 2000)
+            }
         }
         CoroutineScope(Dispatchers.IO).launch {
             goproBleManager.stopRecording()
@@ -299,12 +304,34 @@ class AppBusinessLogic(
         }
     }
 
+    fun powerOffOrOn(){
+        if (bleConnected){
+            stopRecording()
+        } else {
+            CoroutineScope(Dispatchers.IO).launch {
+                goproBleManager.titleText = "Waking up"
+                DataStore.intentiousSleep = false
+                goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, goproBleManager.titleText)
+                if(DataStore.lastConnectedGoProBLEMac != null && settingsManager.settings["target_gopro"] == DataStore.currentGoProBLEName)
+                {
+                    Log.d("","goproConnectCached lastConnectedGoProBLEMac ${DataStore.lastConnectedGoProBLEMac}")
+                    goproBleManager.connectGoProCached(DataStore.lastConnectedGoProBLEMac!!, DataStore.currentGoProBLEName?:"")
+                }
+                else{
+                    Log.d("","goproConnect")
+                    goproBleManager.connectGoPro(settingsManager.settings["target_gopro"]?:"any")
+                }
+            }
+        }
+    }
+
     fun goproPowerOff() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 goproBleManager.goproPowerOff()?.let { file ->
                     DataStore.intentiousSleep = true
-                    goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, "In sleep")
+                    goproBleManager.titleText = "In sleep"
+                    goproBleManager.silentAudioService?.updateMetadataAndNotification(goproBleManager.goproStatusShortened, goproBleManager.titleText)
                     // Handle the result of the connection here
                 }
             } catch (e: Exception) {

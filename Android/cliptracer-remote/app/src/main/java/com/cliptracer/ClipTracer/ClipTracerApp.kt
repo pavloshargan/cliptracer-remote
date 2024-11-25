@@ -372,10 +372,6 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                     scale = 20.sp
                 )
 
-
-
-                var isRecording by remember { mutableStateOf(false) }
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -383,11 +379,14 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                         .wrapContentWidth(Alignment.CenterHorizontally)
                 ) {
                     Button(
-                        onClick = { mainIntent.addHighlight() })
-                    { Text(text = "Highlight") }
+                        onClick = { mainIntent.powerOffOrOn() }
+                    ) {
+                        Text(text = if (uiState.businessState.bleConnected) "Off" else "On")
+                    }
+
                     Spacer(modifier = Modifier.size(6.dp))
                     Button(onClick = {
-                        if (isRecording) {
+                        if (uiState.businessState.recording) {
                             // Stop recording
                             mainIntent.stopRecording()
                             mainIntent.setTriggerOverlayText("Stop recording")
@@ -400,9 +399,14 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                         }
                         mainIntent.showTriggerOverlay()
                         showButtonPressedOverlay = true
-                        isRecording = !isRecording // Toggle the recording state
                     }) {
-                        Text(text = "Shutter")
+                        if (uiState.businessState.bleConnected && uiState.businessState.recording){
+                            Text(text = "Stop&Off")
+                        } else if (uiState.businessState.bleConnected){
+                            Text(text = "Start")
+                        } else {
+                            Text(text = "On&Start")
+                        }
                     }
                     Spacer(modifier = Modifier.size(6.dp))
 
