@@ -15,7 +15,6 @@ import com.cliptracer.ClipTracer.goproutil.settingsKeyMap
 import com.cliptracer.ClipTracer.goproutil.isNotifiable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import java.util.UUID
 import com.cliptracer.ClipTracer.goproutil.*
@@ -25,11 +24,9 @@ import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.reflect.KFunction1
-import android.bluetooth.*
 import android.bluetooth.le.*
 import android.util.Log
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.nio.ByteBuffer
 import java.time.Instant

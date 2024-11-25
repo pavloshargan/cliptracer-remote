@@ -75,15 +75,6 @@ class AppBusinessLogic(
     var GOPRO_DEFAULT_QUERYING_INTERVAL = 3000L
     var GOPRO_QUERYING_INTERVAL = GOPRO_DEFAULT_QUERYING_INTERVAL
 
-
-
-    private var leftToUpload: Int = -1
-    private var postponedUploads: Int = -1
-    private var allMp4Size: Double = 0.0
-    private var allMp4Count: Int = 0
-    private var percentsVideoUploading: Int? = null
-    private var statusVideoUploading: String? = null
-    private var currentUploadingSpeed: Double? = null
     private var bleConnected = false
     private var currentGoPro = ""
 
@@ -91,7 +82,7 @@ class AppBusinessLogic(
     var showTriggerOverlay = false
     var triggerOverlayText = ""
     var showBluetoothDevicesScreen = (!bleConnected)
-    
+
     fun populateBusinessState(){
         synchronized(businessStateUpdatelock) {
             val newBusinessState = BusinessState(

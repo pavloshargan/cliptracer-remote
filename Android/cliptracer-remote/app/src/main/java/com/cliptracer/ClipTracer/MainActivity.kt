@@ -1,37 +1,23 @@
 package com.cliptracer.ClipTracer
 
-
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlarmManager
-import android.app.AlertDialog
-import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
-import android.os.PowerManager
-import android.os.PowerManager.WakeLock
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.datadog.android.DatadogSite
 import com.cliptracer.ClipTracer.gopronetwork.Bluetooth
 import com.cliptracer.ClipTracer.goproutil.TwoWayDict
 import com.cliptracer.ClipTracer.ui.theme.ClipTracerTheme

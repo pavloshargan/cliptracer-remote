@@ -2,7 +2,6 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.datadoghq.dd-sdk-android-gradle-plugin") version "1.12.0"
 }
 
 
@@ -51,11 +50,7 @@ android {
 
 dependencies {
     implementation("androidx.media:media:1.1.0")
-    implementation("com.google.android.exoplayer:exoplayer-ui:2.17.1") // for UI components like PlayerView
-    implementation("com.google.android.exoplayer:exoplayer-core:2.17.1")
-    implementation("io.coil-kt:coil-compose:1.4.0") // Check for the latest version
     implementation("androidx.startup:startup-runtime:1.1.1")
-    implementation("com.arthenica:ffmpeg-kit-full-gpl:5.1")
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.0")
@@ -66,21 +61,8 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
-    implementation("com.google.code.gson:gson:2.8.6")
-    implementation("com.datadoghq:dd-sdk-android-rum:2.2.0")
-    implementation("com.datadoghq:dd-sdk-android-logs:2.2.0")
-    implementation("io.ktor:ktor-client-core:2.2.3")
-    implementation("io.ktor:ktor-client-cio:2.2.3")
-    implementation("com.rabbitmq:amqp-client:5.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-//    implementation("org.opencv:opencv:4.9.0")
-//    implementation(project(":opencvsdk490"))
-    testImplementation ("io.mockk:mockk:1.12.0")
     testImplementation("junit:junit:4.13.2")
-    testImplementation ("org.mockito:mockito-core:5.2.0")
-    testImplementation("org.mockito:mockito-inline:5.2.0")
-    testImplementation ("org.robolectric:robolectric:4.6.1") // For Android class mocking
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0") // For coroutine testing
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

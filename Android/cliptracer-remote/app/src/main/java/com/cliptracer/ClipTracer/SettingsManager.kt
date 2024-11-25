@@ -30,9 +30,9 @@ class SettingsManager(private val context: Context) {
         "updated_on" to "${TimeProvider.getUTCTimeMilliseconds()}"
     )
         set(value) {
-        field = value
-        saveSettings()
-    }
+            field = value
+            saveSettings()
+        }
 
     init {
         loadSettings()

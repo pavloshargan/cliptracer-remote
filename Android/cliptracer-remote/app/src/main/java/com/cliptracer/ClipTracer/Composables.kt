@@ -4,14 +4,10 @@ import androidx.compose.material3.*
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,27 +25,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.unit.Dp
 
 
-@Composable
-fun CustomButton(text: String, icon: ImageVector? = null, paddingH: Dp = 8.dp, paddingV: Dp = 8.dp, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFFFA500),
-            contentColor = Color.White
-        ),
-        shape = RoundedCornerShape(10.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(72.dp)
-            .padding(vertical = paddingV, horizontal = paddingH),
-    ) {
-        if (icon != null) {
-            Icon(icon, contentDescription = text, tint = Color.White)
-            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-        }
-        Text(text, color = Color.White) // Using Color.Unspecified to inherit the contentColor
-    }
-}
 @Composable
 fun TextLabel(
     text1: String,

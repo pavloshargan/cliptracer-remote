@@ -5,16 +5,6 @@ package com.cliptracer.ClipTracer.goproutil
 
 import java.util.UUID
 
-object CameraConnectionMode {
-    const val GOPRO_WIFI = "GoProWifi"
-    const val STADIUM_WIFI = "StadiumWifi"
-    const val GOPRO_WIFI_30SEC = "GoProWifi30secMax"
-    const val GOPRO_WIFI_3MIN = "GoProWifi3minMax"
-    const val GOPRO_WIFI_15MIN = "GoProWifi15minMax"
-    const val AUTO = "Auto"
-}
-
-
 const val GOPRO_UUID = "0000FEA6-0000-1000-8000-00805f9b34fb"
 const val GOPRO_BASE_UUID = "b5f9%s-aa8d-11e3-9046-0002a5d5c51b"
 
