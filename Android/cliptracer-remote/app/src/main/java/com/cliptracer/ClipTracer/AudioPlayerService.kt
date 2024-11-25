@@ -101,13 +101,18 @@ class SilentAudioService : Service() {
                 MediaButtonReceiver.buildMediaButtonPendingIntent(this,
                     PlaybackStateCompat.ACTION_SKIP_TO_NEXT)))
             .build()
-
-
     }
 
-    fun isPlaying(): Boolean{
-        return mediaPlayer?.isPlaying ?: false
+    fun isPlaying(): Boolean {
+        return try {
+            mediaPlayer?.isPlaying == true
+        } catch (e: IllegalStateException) {
+            Log.e("SilentAudioService", "Error checking if MediaPlayer is playing: ${e.message}")
+            false
+        }
     }
+
+
     fun playIfNotYet(){
         mediaPlayer?.let { player ->
         if (!player.isPlaying) {

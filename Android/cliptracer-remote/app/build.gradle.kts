@@ -13,8 +13,8 @@ android {
         applicationId = "com.cliptracer.ClipTracer"
         minSdk = 31
         targetSdk = 34
-        versionCode = 6
-        versionName = "ClipTracer_1.0"
+        versionCode = 7
+        versionName = "ClipTracer_1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
