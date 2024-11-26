@@ -33,6 +33,9 @@ struct ControlView: View {
         return Int(Date().timeIntervalSince(startTime))
     }
     
+    
+    
+    
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -67,25 +70,73 @@ struct ControlView: View {
             self.stopKeepingAlive()
             self.stopEnsurePlaying()
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingCameraInfo.toggle()
+                }) {
+                    Image(systemName: "info.circle")
+                        .foregroundColor(.blue) // Add color for visibility
+                }
+            }
+        }
         .sheet(isPresented: $showingCameraInfo) {
             cameraInfoSheet
         }
     }
 
+    
     @State private var showingCameraInfo = false
-    var cameraInfoSheet: some View {
-        NavigationView {
-            List {
-                Text("General instructions: Use play/pause button on your smartwatch or headphones to start/stop recording.")
-                Text("Camera Status: Ready - powered on, ready to record. Sleep - powered off, ready to record. Not Connected - camera not ready.")
-                Text("Stay tuned: cliptracer.com Youtube: @Cliptracer")
+        var cameraInfoSheet: some View {
+            NavigationView {
+                List {
+                    Text("""
+                        General instructions:
+                        Use play/pause button on your
+                        smartwatch or headphones to
+                        start/stop recording
+                        """)
+    
+                    Text("""
+                        Camera Status:
+                        Ready - powered on, ready to record
+                        Sleep - powered off, ready to record
+                        Not Connected - camera not ready
+                        """)
+    
+                    Text("""
+                        Camera Settings:
+                        Field 1: resolution
+                        Field 2: fps
+                        Field 3: lenses
+                        Field 4: battery (percents)
+                        Field 5: memory left (minutes)
+                        """)
+    
+                    Text("""
+                        Lenses Abbreviations:
+                        w - wide
+                        n - narrow
+                        l - linear
+                        sv - super view
+                        msv - max super view
+                        lev - linear + horizon leveling
+                        loc - linear + horizon lock
+                        hv - hyper view
+                        """)
+    
+                    Text("""
+                        Stay tuned:
+                        cliptracer.com
+                        Youtube: @Cliptracer
+                        """)
+                }
+                .navigationBarTitle("Legend", displayMode: .inline)
+                .navigationBarItems(trailing: Button("Done") {
+                    showingCameraInfo.toggle()
+                })
             }
-            .navigationBarTitle("Legend", displayMode: .inline)
-            .navigationBarItems(trailing: Button("Done") {
-                showingCameraInfo.toggle()
-            })
         }
-    }
 
         init(player: AudioPlayerBridge) {
             print("calling view model")
@@ -245,9 +296,9 @@ struct LayoutView: View {
     
     private var shutterButtonLabel: String {
         if curArtist.contains("Recording") || curArtist.contains(":")  {
-            return "Pause & Off"
+            return "Pause&Off"
         } else if curArtist == "sleep" {
-            return "On & Start"
+            return "On&Start"
         } else if curArtist == "Ready" {
             return "Start"
         } else {
