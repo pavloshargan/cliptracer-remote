@@ -239,13 +239,18 @@ class AudioPlayerBridge: UIViewController {
     
     func prevSongPressedHandler(){
         print("left pressed")
-        self.setHighlight()
+        if self.peripheral?.connectionLost == true
+        {
+            self.reconnectPeripheral()
+        } else {
+            powerOff()
+        }
     }
+    
     func playPausePressedHandler(){
         print("toggle handler")
         print(Unmanaged.passUnretained(self).toOpaque())
         print("connection Lost:")
-        print(self.peripheral?.connectionLost)
         if self.peripheral?.connectionLost == true
         {
             print("connection lost")
@@ -256,7 +261,6 @@ class AudioPlayerBridge: UIViewController {
 
         }
     
-        print(self.peripheral?.status?.encoding)
         if self.peripheral?.status?.encoding == true {
             self.setShutterOff()
             Thread.sleep(forTimeInterval: 2.0)

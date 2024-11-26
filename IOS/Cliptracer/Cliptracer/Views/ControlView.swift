@@ -12,26 +12,27 @@ struct ControlView: View {
     @State private var layoutIndex = 0 // Current index for layout
     @Environment(\.colorScheme) var colorScheme
 
-        @State private var appStartedAt: Date = Date()
-        @State var cameraStatus: CameraStatus?
-        @State var updateTimer: Timer? = nil
-        @State var keepAppAliveTimer: Timer? = nil
-        @State var terminationTimer: Timer? = nil
-        @State var ensurePlayingTimer: Timer? = nil
-        @State var isPlaying = false
-        @State var recordingNow = false
-        @State var recordingStartTime: Date? = nil  // This will hold the start time when the recording begins
-        var recordingSeconds: Int {
-            guard let startTime = recordingStartTime else { return 0 }
-            return Int(Date().timeIntervalSince(startTime))
-        }
-        @State var shutterOn = false // Keeping track of the shutter state
-        @State var curTitle = "Not connected" // Keeping track of the shutter state
-        @State var curArtist = "Not connected" // Keeping track of the shutter state
-        @State var stateStr = "Not Connected"
-        var playerVC: AudioPlayerBridge
+    @State private var appStartedAt: Date = Date()
+    @State var cameraStatus: CameraStatus?
+    @State var updateTimer: Timer? = nil
+    @State var keepAppAliveTimer: Timer? = nil
+    @State var terminationTimer: Timer? = nil
+    @State var ensurePlayingTimer: Timer? = nil
+    @State var isPlaying = false
+    @State var recordingNow = false
+    @State var recordingStartTime: Date? = nil  // This will hold the start time when the recording begins
+    @State var shutterOn = false // Keeping track of the shutter state
+    @State var curTitle = "Not connected" // Keeping track of the shutter state
+    @State var curArtist = "Not connected" // Keeping track of the shutter state
+    @State var stateStr = "Not Connected"
+    var playerVC: AudioPlayerBridge
 
 
+    var recordingSeconds: Int {
+        guard let startTime = recordingStartTime else { return 0 }
+        return Int(Date().timeIntervalSince(startTime))
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -233,6 +234,28 @@ struct LayoutView: View {
         return 1.05
     }
 
+    
+    private var onOffButtonLabel: String {
+        if curArtist == "sleep" {
+           return "On"
+        } else {
+            return "Off"
+        }
+    }
+    
+    private var shutterButtonLabel: String {
+        if curArtist.contains("Recording") || curArtist.contains(":")  {
+            return "Pause & Off"
+        } else if curArtist == "sleep" {
+            return "On & Start"
+        } else if curArtist == "Ready" {
+            return "Start"
+        } else {
+            return "Shutter"
+        }
+    }
+
+    
     var body: some View {
         ZStack {
             GeometryReader { geometry in
@@ -256,8 +279,8 @@ struct LayoutView: View {
                     .foregroundColor(colorScheme == .dark ? .white : .black)
 
                 HStack(spacing: 20) {
-                    ButtonView(player: player, systemImageName: "backward.fill", action: player.prevSongPressedHandler, label: "Highlight")
-                    ButtonView(player: player, systemImageName: "playpause.fill", action: player.playPausePressedHandler, label: "Shutter")
+                    ButtonView(player: player, systemImageName: "backward.fill", action: player.prevSongPressedHandler, label: onOffButtonLabel)
+                    ButtonView(player: player, systemImageName: "playpause.fill", action: player.playPausePressedHandler, label: shutterButtonLabel)
                     ButtonView(player: player, systemImageName: "forward.fill", action: player.nextSongPressedHandler, label: "Highlight")
                 }
                 .padding(.top, 20)
