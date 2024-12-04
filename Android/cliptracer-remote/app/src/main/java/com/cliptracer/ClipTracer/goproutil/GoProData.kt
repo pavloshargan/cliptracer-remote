@@ -183,7 +183,10 @@ val modeOptions = TwoWayDict(
     26 to "Night Lapse Video",
     27 to "Slo-Mo"
 )
-val settingsKeyMap = TwoWayDict(
+
+
+
+val gopro12AndBelowSettingsKeyMap = TwoWayDict(
     "2" to "resolution",
     "3" to "fps",
     "145" to "shutter_speed",
@@ -199,6 +202,25 @@ val settingsKeyMap = TwoWayDict(
     "144" to "mode",
     "30" to "ssid"
 )
+
+val gopro13AndAboveSettingsKeyMap = TwoWayDict(
+    "2" to "resolution",
+    "234" to "fps",
+    "145" to "shutter_speed",
+    "102" to "iso_min",
+    "13" to "iso_max",
+    "115" to "white_balance",
+    "116" to "color",
+    "117" to "sharpness",
+    "118" to "exposure",
+    "229" to "lens",
+    "124" to "bitrate",
+    "88" to "lcd_brightness",
+    "144" to "mode",
+    "30" to "ssid"
+)
+
+var settingsKeyMap = gopro12AndBelowSettingsKeyMap
 
 val goproSettingsOptionsMap = mapOf(
     "resolution" to resolutionOptions,

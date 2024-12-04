@@ -95,13 +95,19 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                 val rspString = rsp.toString()
 //                print("rspString: ${rspString}")
 
-                if (rspString.contains("\"134\":")) { //using a hacky approach to differentiate settings and statuses responses,
+                if (rspString.contains("\"134\":") || rspString.contains("\"234\":")) { //using a hacky approach to differentiate settings and statuses responses,
                     // because the characteristic is the same for both.
                     // key 134 is present for settings only for all GoPro models
                     println("settings pooled")
-
+                    if(rspString.contains("\"234\":")){
+                        //this is HERO13
+                        settingsKeyMap = gopro13AndAboveSettingsKeyMap
+                    } else{
+                        //this is not HERO13
+                        settingsKeyMap = gopro12AndBelowSettingsKeyMap
+                    }
                     currentSettings = rsp
-//                        print("got settings: $currentSettings")
+                        print("got settings: $currentSettings")
 
                     settingsUpdatedAt = TimeProvider.getUTCTimeMilliseconds()
                     currentSettingsFormatted = formatAllSettings() as Map<String, String>
