@@ -21,6 +21,8 @@ enum CameraError: Error {
 /// A simple wrapper around CBPeripheral to handle CoreBluetooth Peripheral related tasks
 final class Peripheral: NSObject {
     
+    var goproVersion13AndAbove = false
+
     var status: CameraStatus?
     var settings: CameraSettings?
     var connectionLost = false

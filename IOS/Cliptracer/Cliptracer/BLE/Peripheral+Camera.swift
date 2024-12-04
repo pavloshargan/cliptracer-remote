@@ -119,7 +119,7 @@ struct CommandResponse {
 }
 
 extension Peripheral {
-    
+        
     func setCommand(command: Data, completion: ((Result<CommandResponse, Error>) -> Void)?) {
         let serviceUUID = CBUUID(string: "FEA6")
         let commandUUID = CBUUID(string: "B5F90072-AA8D-11E3-9046-0002A5D5C51B")
@@ -195,36 +195,53 @@ extension Peripheral {
             
             switch messageHexString.count {
             case 36:
+                print("Parsing message...")
+
                 // Check if the messageHexString is long enough
                 guard messageHexString.count >= 36 else {
-                    print("response less than 36 symbols")
+                    print("Response less than 36 symbols")
                     print(messageHexString.count)
                     print(messageHexString)
                     return .failure(CameraError.invalidResponse)
                 }
+
                 print(messageHexString)
-                //NSLog("Status Raw: \(messageHexString)")
-                let startIndex = messageHexString.index(messageHexString.startIndex, offsetBy: 22)
-                let endIndex = messageHexString.index(startIndex, offsetBy: 7) // Since you want the range 4...5, this is 1 position from the startIndex
-                var videoTime = Int(messageHexString[startIndex...endIndex], radix: 16)
-                
-                
-                let startIndex2 = messageHexString.index(messageHexString.startIndex, offsetBy: 34)
-                let endIndex2 = messageHexString.index(startIndex2, offsetBy: 1) // Since you want the range 4...5, this is 1 position from the startIndex
-                var batteryPercents = Int(messageHexString[startIndex2...endIndex2], radix: 16)
-                
-                let startIndex3 = messageHexString.index(messageHexString.startIndex, offsetBy: 16)
-                let endIndex3 = messageHexString.index(startIndex3, offsetBy: 1) // Since you want the range 4...5, this is 1 position from the startIndex
-                var encoding = Bool(messageHexString[startIndex3...endIndex3] == "01")
-                
-                let startIndex4 = messageHexString.index(messageHexString.startIndex, offsetBy: 10)
-                let endIndex4 = messageHexString.index(startIndex4, offsetBy: 1) // Since you want the range 4...5, this is 1 position from the startIndex
-                var busy = Bool(messageHexString[startIndex4...endIndex4] == "01")
-                let res = CameraStatus(battery: batteryPercents ?? 0, videoTime: videoTime ?? 0, encoding: encoding, busy: busy)
+
+                // Helper function to find a value after a specific prefix
+                func extractValue(after prefix: String, valueSize: Int, in hexString: String) -> String? {
+                    guard let range = hexString.range(of: prefix) else {
+                        return nil
+                    }
+                    let valueStartIndex = hexString.index(range.upperBound, offsetBy: 0) // Value starts right after the prefix
+                    let valueEndIndex = hexString.index(valueStartIndex, offsetBy: valueSize * 2 - 1) // Each byte = 2 hex chars
+                    return String(hexString[valueStartIndex...valueEndIndex])
+                }
+
+                // Extract video time (4 bytes after "2304")
+                let videoTimeHex = extractValue(after: "2304", valueSize: 4, in: messageHexString)
+                let videoTime = Int(videoTimeHex ?? "0", radix: 16) ?? 0
+
+                // Extract battery percentage (1 byte after "4601")
+                let batteryHex = extractValue(after: "4601", valueSize: 1, in: messageHexString)
+                let batteryPercents = Int(batteryHex ?? "0", radix: 16) ?? 0
+
+                // Extract encoding (1 byte after "0A01")
+                let encodingHex = extractValue(after: "0A01", valueSize: 1, in: messageHexString)
+                let encoding = (encodingHex == "01")
+
+                // Extract busy status (1 byte after "0601")
+                let busyHex = extractValue(after: "0601", valueSize: 1, in: messageHexString)
+                let busy = (busyHex == "01")
+
+                // Create CameraStatus object
+                let res = CameraStatus(battery: batteryPercents, videoTime: videoTime, encoding: encoding, busy: busy)
                 print(res.description)
                 return .success(res)
+
                 
             case 24:
+                print("case 24")
+
                 // Check if the messageHexString is long enough
                 guard messageHexString.count >= 24 else {
                     print("response less than 24 symbols")
@@ -232,33 +249,47 @@ extension Peripheral {
                     print(messageHexString)
                     return .failure(CameraError.invalidResponse)
                 }
+
                 print(messageHexString)
-                
-                //NSLog("Status Raw: \(messageHexString)")
-                let startIndex3 = messageHexString.index(messageHexString.startIndex, offsetBy: 22)
-                let endIndex3 = messageHexString.index(startIndex3, offsetBy: 1) // Since you want the range 4...5, this is 1 position from the startIndex
-                var lenses_code = Int(messageHexString[startIndex3...endIndex3], radix: 16)
-                
-                let startIndex2 = messageHexString.index(messageHexString.startIndex, offsetBy: 16)
-                let endIndex2 = messageHexString.index(startIndex2, offsetBy: 1) // Since you want the range 4...5, this is 1 position from the startIndex
-                var fps_code = Int(messageHexString[startIndex2...endIndex2], radix: 16)
-                
-                let startIndex1 = messageHexString.index(messageHexString.startIndex, offsetBy: 10)
-                let endIndex1 = messageHexString.index(startIndex1, offsetBy: 1) // Since you want the range 4...5, this is 1 position from the startIndex
-                var resolution_code = Int(messageHexString[startIndex1...endIndex1], radix: 16)
-                let res = CameraSettings(resolution_id: resolution_code ?? 0, fps_id: fps_code ?? 0, lenses_id: lenses_code ?? 0)
+
+                // Helper function to find a value after a setting code
+                func extractValue(after settingCode: String, in hexString: String) -> Int? {
+                    guard let range = hexString.range(of: "\(settingCode)01") else {
+                        return nil
+                    }
+                    let valueStartIndex = hexString.index(range.upperBound, offsetBy: 0) // Value is immediately after "01"
+                    let valueEndIndex = hexString.index(valueStartIndex, offsetBy: 1)
+                    return Int(hexString[valueStartIndex...valueEndIndex], radix: 16)
+                }
+
+                // Extract values for resolution, fps, and lenses
+                let resolutionCode = extractValue(after: "02", in: messageHexString) ?? 0
+                let fpsCode = extractValue(after: "03", in: messageHexString) ?? extractValue(after: "EA", in: messageHexString) ?? 0
+                let lensesCode = extractValue(after: "79", in: messageHexString) ?? extractValue(after: "E5", in: messageHexString) ?? 0
+
+                // Create CameraSettings object
+                let res = CameraSettings(resolution_id: resolutionCode, fps_id: fpsCode, lenses_id: lensesCode)
                 print(res.description)
                 return .success(res)
-                
             default:
                 print("Unexpected response length: \(messageHexString.count)")
+                goproVersion13AndAbove = !goproVersion13AndAbove
                 print(messageHexString)
                 return .failure(CameraError.invalidResponse)
             }
         }
-        
+        //payload size,statuses query type, battery, videotime, busy, encoding
         requestData(Data([0x05, 0x13, 0x46, 0x23, 0x06, 0x0A]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {
-            self.requestData(Data([0x04, 0x12, 0x02, 0x03, 0x79]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+           
+            //payload size,settings query type, resolution, fps, lenses
+            if (self.goproVersion13AndAbove){
+                self.requestData(Data([0x04, 0x12, 0x02, 0xEA, 0xE5]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+            }
+            else{
+                // resolution, fps, lenses
+                self.requestData(Data([0x04, 0x12, 0x02, 0x03, 0x79]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+            }
+            
         }
     }
 
