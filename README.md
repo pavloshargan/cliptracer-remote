@@ -1,7 +1,7 @@
 # cliptracer-remote
 Control any GoPro from any Garmin Computer or watch and more
 
-IOS and Android implementation of GoPo camera control via Media playback interface. Enables camera control using various devices such as smartwatches, cycling computers, headphones etc.
+IOS and Android implementation of GoPo camera control via Media playback interface. Enables camera control using various devices such as smartwatches, cycling computers, headphones etc. Instead of the Song name and Artist you see the camera status and settings. Instead of rewing/play/fastworward the buttons control the camera.
 Start/Stop recording, Highlight. Every time the recording starts or stops, the camera goes to sleep to save battery. The app stays awake thankfully to an active media session (10hour audio track). So you just open it once and leave your phone in the pocket.
 
 
