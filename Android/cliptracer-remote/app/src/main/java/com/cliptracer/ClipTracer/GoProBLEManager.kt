@@ -27,12 +27,17 @@ import kotlin.reflect.KFunction1
 import android.bluetooth.le.*
 import android.util.Log
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.nio.ByteBuffer
 import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import kotlin.math.abs
 
 
 class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String, Unit>, var onGoproDisconnect: KFunction1<BluetoothDevice, Unit>) {
@@ -95,6 +100,24 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                 val rspString = rsp.toString()
 //                print("rspString: ${rspString}")
 
+                if (characteristic == GoProUUID.CQ_COMMAND_RSP.uuid && data.size == 12) { //received gopro time
+                    try {
+                        currentDatetimeSeconds = formatDatetime(data) + 1 // correction for delay
+                        val timeOnPhone = TimeProvider.getUTCTimeMilliseconds() / 1000
+                        val timeDifference = abs(timeOnPhone - currentDatetimeSeconds)
+                        if (timeDifference > 5) {
+                            println("DateTime on GoPro: $currentDatetimeSeconds")
+                            println("DateTime on Phone: $timeOnPhone")
+                            println("Time difference between the phone and the GoPro is > 5: $timeDifference. GoProTime: $currentDatetimeSeconds PhoneTime: $timeOnPhone")
+                            CoroutineScope(Dispatchers.IO).launch {
+                                setDateTimeOnGoPro()
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("Error processing date: ${e.message} date in bytes: ${data}")
+                    }
+                }
+
                 if (rspString.contains("\"134\":") || rspString.contains("\"234\":")) { //using a hacky approach to differentiate settings and statuses responses,
                     // because the characteristic is the same for both.
                     // key 134 is present for settings only for all GoPro models
@@ -107,7 +130,7 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                         settingsKeyMap = gopro12AndBelowSettingsKeyMap
                     }
                     currentSettings = rsp
-                        print("got settings: $currentSettings")
+                    print("got settings: $currentSettings")
 
                     settingsUpdatedAt = TimeProvider.getUTCTimeMilliseconds()
                     currentSettingsFormatted = formatAllSettings() as Map<String, String>
@@ -144,7 +167,7 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                                 print(goproVersion)
                                 DataStore.goproVersion = goproVersion as String
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    setDateTimeOnGoPro(goproVersion!!)
+                                    setDateTimeOnGoPro()
                                 }
                             }
                             else{
@@ -153,7 +176,7 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                                 print(goproVersion)
                                 DataStore.goproVersion = goproVersion as String
                                 CoroutineScope(Dispatchers.IO).launch {
-                                    setDateTimeOnGoPro(goproVersion!!)
+                                    setDateTimeOnGoPro()
                                 }
                             }
                         }
@@ -355,74 +378,6 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
         }
     }
 
-//Hero 11+ only
-//        @OptIn(ExperimentalUnsignedTypes::class)
-//        @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
-//        suspend fun setLocalDateTimeOnGoPro() {
-//            Log.i("","Setting local date, time, and timezone on GoPro")
-//            val localDateTime = ZonedDateTime.now()
-//
-//            // Convert year to bytes
-//            val yearBytes = ByteBuffer.allocate(2).putShort(localDateTime.year.toShort()).array()
-//
-//            val utcOffset = localDateTime.offset.totalSeconds / 60 // UTC offset in minutes
-//            val dstOn = if (localDateTime.zone.rules.isDaylightSavings(localDateTime.toInstant())) 1 else 0
-//
-//            val localDateTimeCmd = ubyteArrayOf(
-//                0x0CU,  // Total number of bytes in the query
-//                0x0FU,  // Command ID for set local date/time
-//                yearBytes[0].toUByte(),                // First byte of year
-//                yearBytes[1].toUByte(),                // Second byte of year
-//                localDateTime.monthValue.toUByte(),    // Month
-//                localDateTime.dayOfMonth.toUByte(),    // Day
-//                localDateTime.hour.toUByte(),          // Hour
-//                localDateTime.minute.toUByte(),        // Minute
-//                localDateTime.second.toUByte(),        // Second
-//                (utcOffset shr 8).toUByte(),           // Higher byte of UTC offset
-//                (utcOffset and 0xFF).toUByte(),        // Lower byte of UTC offset
-//                dstOn.toUByte()                        // DST on/off
-//            )
-//
-//            val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
-//            if (lastConnectedGoProBLEMac != null) {
-//                ble.writeCharacteristic(lastConnectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, localDateTimeCmd)
-//            }
-//        }
-
-
-        @OptIn(ExperimentalUnsignedTypes::class)
-    @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
-    suspend fun setDateTimeOnGoPro(model: String) {
-        Log.i("","Setting UTC date and time on GoPro")
-        var utcDateTime: ZonedDateTime
-        if(model=="HERO11+"){
-            utcDateTime = ZonedDateTime.now()
-        }
-        else{//hero10
-            utcDateTime = ZonedDateTime.now(ZoneOffset.UTC)
-        }
-        // Convert year to bytes
-        val yearBytes = ByteBuffer.allocate(2).putShort(utcDateTime.year.toShort()).array()
-
-        val dateTimeCmd = ubyteArrayOf(
-            0x09U,  // Total number of bytes in the query
-            0x0DU,  // Command ID for set date/time
-            0x07U,
-            yearBytes[0].toUByte(),                // First byte of year
-            yearBytes[1].toUByte(),                // Second byte of year
-            utcDateTime.monthValue.toUByte(),      // Month
-            utcDateTime.dayOfMonth.toUByte(),      // Day
-            utcDateTime.hour.toUByte(),            // Hour
-            utcDateTime.minute.toUByte(),          // Minute
-            utcDateTime.second.toUByte()           // Second
-        )
-
-        val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
-        if (lastConnectedGoProBLEMac != null) {
-            ble.writeCharacteristic(lastConnectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, dateTimeCmd)
-        }
-    }
-
     @OptIn(ExperimentalUnsignedTypes::class)
     @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
     suspend fun startRecording() {
@@ -520,20 +475,6 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
 
     @OptIn(ExperimentalUnsignedTypes::class)
     @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
-    suspend fun getGoProTIme() {
-        val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
-        if (lastConnectedGoProBLEMac != null) {
-            //Log.i("","Getting the camera's statuses")
-            val getCameraTime = ubyteArrayOf(0x01U, 0x0EU)
-
-            ble.writeCharacteristic(lastConnectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, getCameraTime)
-        } else {
-            Log.w("","No connected GoPro available.")
-        }
-    }
-
-    @OptIn(ExperimentalUnsignedTypes::class)
-    @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
     suspend fun getSettings() {
         val lastConnectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
         if (lastConnectedGoProBLEMac != null) {
@@ -569,48 +510,95 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
         }
     }
 
+    @OptIn(ExperimentalUnsignedTypes::class)
+    @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
+    suspend fun setDateTimeOnGoPro() {
+        val model = goproVersion?:"HERO11+"
 
-    fun getCurrentUTCSecondsWithCorrection(): Long? {
-        // Return null if currentDatetimeSeconds is null
-        if (currentDatetimeSeconds == 0.toLong()) {
-            return null
+        println("Setting UTC date and time on GoPro")
+        var utcDateTime: ZonedDateTime
+        if(model=="HERO11+"){
+            utcDateTime = ZonedDateTime.now()
+            println("Zoned datetime: ${utcDateTime}")
         }
+        else{//hero10
+            utcDateTime = ZonedDateTime.now(ZoneOffset.UTC)
+        }
+        // Convert year to bytes
+        val yearBytes = ByteBuffer.allocate(2).putShort(utcDateTime.year.toShort()).array()
 
-        val currentTimeMillis = TimeProvider.getUTCTimeMilliseconds()
-        val timeElapsedSinceUpdate = currentTimeMillis - datetimeUpdatedAt
-        val timeElapsedSinceUpdateSeconds = Math.round(timeElapsedSinceUpdate / 1000.0).toLong()
-        println("timeElapsedSinceUpdateSeconds $timeElapsedSinceUpdateSeconds")
-        return currentDatetimeSeconds //+ timeElapsedSinceUpdateSeconds
+        val dateTimeCmd = ubyteArrayOf(
+            0x09U,  // Total number of bytes in the query
+            0x0DU,  // Command ID for set date/time
+            0x07U,
+            yearBytes[0].toUByte(),                // First byte of year
+            yearBytes[1].toUByte(),                // Second byte of year
+            utcDateTime.monthValue.toUByte(),      // Month
+            utcDateTime.dayOfMonth.toUByte(),      // Day
+            utcDateTime.hour.toUByte(),            // Hour
+            utcDateTime.minute.toUByte(),          // Minute
+            utcDateTime.second.toUByte()           // Second
+        )
+
+        val connectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
+        if (connectedGoProBLEMac != null) {
+            ble.writeCharacteristic(connectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, dateTimeCmd)
+        }
+        delay(5000)
+        checkGoProTime()
+    }
+
+    @OptIn(ExperimentalUnsignedTypes::class)
+    @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
+    suspend fun checkGoProTime() {
+        val connectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
+        if (connectedGoProBLEMac != null) {
+            val getCameraTime = ubyteArrayOf(0x01U, 0x0EU)
+            ble.writeCharacteristic(connectedGoProBLEMac, GoProUUID.CQ_COMMAND.uuid, getCameraTime)
+
+        } else {
+            println("No connected GoPro available.")
+        }
     }
 
     fun formatDatetime(currentDatetimeBytes: UByteArray): Long {
-        // Extract the year, which is in the first two bytes
-        val year = ByteBuffer.wrap(byteArrayOf(currentDatetimeBytes[4].toByte(), currentDatetimeBytes[5].toByte())).short.toInt()
-        val month = currentDatetimeBytes[6].toInt()
-        val day = currentDatetimeBytes[7].toInt()
-        val hour = currentDatetimeBytes[8].toInt()
-        val minute = currentDatetimeBytes[9].toInt()
-        val second = currentDatetimeBytes[10].toInt()
-        val tenthOfSecond = currentDatetimeBytes[11].toInt() // The tenth of a second
+        try {
+            // Extract the year, which is in the first two bytes
+            val year = ByteBuffer.wrap(byteArrayOf(currentDatetimeBytes[4].toByte(), currentDatetimeBytes[5].toByte())).short.toInt()
+            val month = currentDatetimeBytes[6].toInt()
+            val day = currentDatetimeBytes[7].toInt()
+            val hour = currentDatetimeBytes[8].toInt()
+            val minute = currentDatetimeBytes[9].toInt()
+            val second = currentDatetimeBytes[10].toInt()
+            val tenthOfSecond = currentDatetimeBytes[11].toInt() // The tenth of a second
+            val stringTime = "$year-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}"
 
-        val stringTime = "${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:${second.toString().padStart(2, '0')}Z"
-        println("stringTime $stringTime")
 
-        // Parse the string time to an Instant
-        val instant = Instant.parse(stringTime)
+            val localDateTime = LocalDateTime.parse(stringTime, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+            // Convert LocalDateTime to Instant with or without offset depending on gopro model
+            val instant = if (goproVersion == "HERO11+") {
+                val zoneOffset = ZoneId.systemDefault().rules.getOffset(localDateTime)
+                localDateTime.toInstant(zoneOffset)
+            } else {
+                localDateTime.toInstant(ZoneOffset.UTC)
+            }
 
-        // Round to the nearest second
+            // Round to the nearest second
+            val epochSecond = instant.epochSecond
 
-        // Convert Instant to LocalDateTime for printing
-        val dateTime = instant.atZone(ZoneOffset.UTC).toLocalDateTime()
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        val formattedDateTime = dateTime.format(formatter)
+            // Convert Instant to LocalDateTime for printing
+            val dateTime = LocalDateTime.ofEpochSecond(epochSecond, 0, ZoneOffset.UTC)
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            val formattedDateTime = dateTime.format(formatter)
 
-        println("Formatted DateTime: $formattedDateTime")
+            println("Formatted DateTime: $formattedDateTime")
 
-        return instant.epochSecond
+            return epochSecond
+        } catch (e: DateTimeParseException) {
+            println("Failed to parse DateTime: $e")
+            throw IllegalArgumentException("Invalid datetime data provided")
+        }
     }
-
 
     fun formatAllSettings(): Map<String, String?> {
         // Retrieve the entire current settings map once

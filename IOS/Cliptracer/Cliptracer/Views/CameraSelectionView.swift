@@ -92,6 +92,13 @@ struct CameraSelectionView: View {
                                         return
                                     }
                                     NSLog("Connected to \(peripheral.name)!")
+                                    peripheral.goproVersion11AndAbove = nil
+                                    peripheral.goproVersion13AndAbove = false
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                                        peripheral.checkCameraTime()
+                                    }
+                                    
                                     initializedPlayer = AudioPlayerBridge(peripheral: peripheral)
                                     self.currentPeripheral = peripheral
                                     self.selectedPeripheral = peripheral

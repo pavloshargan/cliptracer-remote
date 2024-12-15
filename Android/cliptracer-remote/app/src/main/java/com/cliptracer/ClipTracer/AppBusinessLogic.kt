@@ -69,6 +69,7 @@ class AppBusinessLogic(
 
     private var keepAliveJob: Job? = null
     private var queryingGoProSettingsAndStatusesJob: Job? = null
+    private var queryingGoProTimeJob: Job? = null
     private var startGoProBLEReconnectionJob: Job? = null
     private var goproReconnectJob: Job? = null
     private var populatingStateJob: Job? = null
@@ -113,6 +114,25 @@ class AppBusinessLogic(
             elapsedTime += checkInterval
         }
     }
+
+    private fun startQueryingGoProTime(){
+        queryingGoProTimeJob = coroutineScope.launch(Dispatchers.IO) {
+            while (isActive)
+            {
+                if(bleConnected){
+                    // Run the BLE operations asynchronously.
+                    goproBleManager.checkGoProTime()
+                    delay(15000)
+                }
+            }
+        }
+    }
+
+    private fun stopQueryingGoProTime() {
+        queryingGoProTimeJob?.cancel()
+        queryingGoProTimeJob = null
+    }
+    
     private fun startQueryingGoProSettingsAndStatuses(){
         queryingGoProSettingsAndStatusesJob = coroutineScope.launch(Dispatchers.IO) {
             while (isActive)
@@ -125,9 +145,7 @@ class AppBusinessLogic(
                     delayQueryingGoPro()
                 }
             }
-
         }
-
     }
 
     private fun stopQueryingGoProSettingsAndStatuses() {
@@ -181,6 +199,7 @@ class AppBusinessLogic(
         stopGoProBLEReconnection()
         stopKeepingGoProAlive()
         stopQueryingGoProSettingsAndStatuses()
+        stopQueryingGoProTime()
         ble.cleanup()
 
     }
@@ -202,10 +221,11 @@ class AppBusinessLogic(
 
 
 
-        init { startPopulatingState()
+    init { startPopulatingState()
         startGoProBLEReconnection()
         startKeepingGoProAlive()
         startQueryingGoProSettingsAndStatuses()
+        startQueryingGoProTime()
         startPopulatingState()
     }
 
@@ -242,6 +262,10 @@ class AppBusinessLogic(
         bleConnected = true
         showBluetoothDevicesScreen = false
         goproBleManager.titleText = "Ready"
+        coroutineScope.launch(Dispatchers.IO) {
+            delay(3000)
+            goproBleManager.checkGoProTime() //time sync
+        }
         coroutineScope.launch(Dispatchers.IO) {
             if(DataStore.intentiousSleep){
 //                delay(1000)

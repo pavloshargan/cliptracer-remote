@@ -119,7 +119,7 @@ struct CommandResponse {
 }
 
 extension Peripheral {
-        
+    
     func setCommand(command: Data, completion: ((Result<CommandResponse, Error>) -> Void)?) {
         let serviceUUID = CBUUID(string: "FEA6")
         let commandUUID = CBUUID(string: "B5F90072-AA8D-11E3-9046-0002A5D5C51B")
@@ -180,33 +180,22 @@ extension Peripheral {
             }
         }
     }
-
+    
     func requestCameraInfo() {
         let serviceUUID = CBUUID(string: "FEA6")
         let commandUUID = CBUUID(string: "B5F90076-AA8D-11E3-9046-0002A5D5C51B")
         let commandResponseUUID = CBUUID(string: "B5F90077-AA8D-11E3-9046-0002A5D5C51B")
-        
-        // your handleDataResponse function should go here.
+
         func handleDataResponse(_ data: Data) -> Result<Any, Error> {
             var messageHexString = ""
             for i in 0 ..< data.count {
                 messageHexString += String(format: "%02X", data[i])
             }
-            
+            print("count \(messageHexString.count)")
             switch messageHexString.count {
             case 36:
-                print("Parsing message...")
-
-                // Check if the messageHexString is long enough
-                guard messageHexString.count >= 36 else {
-                    print("Response less than 36 symbols")
-                    print(messageHexString.count)
-                    print(messageHexString)
-                    return .failure(CameraError.invalidResponse)
-                }
-
                 print(messageHexString)
-
+                
                 // Helper function to find a value after a specific prefix
                 func extractValue(after prefix: String, valueSize: Int, in hexString: String) -> String? {
                     guard let range = hexString.range(of: prefix) else {
@@ -216,42 +205,32 @@ extension Peripheral {
                     let valueEndIndex = hexString.index(valueStartIndex, offsetBy: valueSize * 2 - 1) // Each byte = 2 hex chars
                     return String(hexString[valueStartIndex...valueEndIndex])
                 }
-
+                
                 // Extract video time (4 bytes after "2304")
                 let videoTimeHex = extractValue(after: "2304", valueSize: 4, in: messageHexString)
                 let videoTime = Int(videoTimeHex ?? "0", radix: 16) ?? 0
-
+                
                 // Extract battery percentage (1 byte after "4601")
                 let batteryHex = extractValue(after: "4601", valueSize: 1, in: messageHexString)
                 let batteryPercents = Int(batteryHex ?? "0", radix: 16) ?? 0
-
+                
                 // Extract encoding (1 byte after "0A01")
                 let encodingHex = extractValue(after: "0A01", valueSize: 1, in: messageHexString)
                 let encoding = (encodingHex == "01")
-
+                
                 // Extract busy status (1 byte after "0601")
                 let busyHex = extractValue(after: "0601", valueSize: 1, in: messageHexString)
                 let busy = (busyHex == "01")
-
+                
                 // Create CameraStatus object
                 let res = CameraStatus(battery: batteryPercents, videoTime: videoTime, encoding: encoding, busy: busy)
                 print(res.description)
                 return .success(res)
-
+                
                 
             case 24:
-                print("case 24")
-
-                // Check if the messageHexString is long enough
-                guard messageHexString.count >= 24 else {
-                    print("response less than 24 symbols")
-                    print(messageHexString.count)
-                    print(messageHexString)
-                    return .failure(CameraError.invalidResponse)
-                }
-
                 print(messageHexString)
-
+                
                 // Helper function to find a value after a setting code
                 func extractValue(after settingCode: String, in hexString: String) -> Int? {
                     guard let range = hexString.range(of: "\(settingCode)01") else {
@@ -261,26 +240,49 @@ extension Peripheral {
                     let valueEndIndex = hexString.index(valueStartIndex, offsetBy: 1)
                     return Int(hexString[valueStartIndex...valueEndIndex], radix: 16)
                 }
-
+                
                 // Extract values for resolution, fps, and lenses
                 let resolutionCode = extractValue(after: "02", in: messageHexString) ?? 0
                 let fpsCode = extractValue(after: "03", in: messageHexString) ?? extractValue(after: "EA", in: messageHexString) ?? 0
                 let lensesCode = extractValue(after: "79", in: messageHexString) ?? extractValue(after: "E5", in: messageHexString) ?? 0
-
+                
                 // Create CameraSettings object
                 let res = CameraSettings(resolution_id: resolutionCode, fps_id: fpsCode, lenses_id: lensesCode)
                 print(res.description)
                 return .success(res)
+            case 12:
+                print("case 12")
+                print(messageHexString)
+                // repsonse len 12 means that some setting were not fetched, and it is a sign that the requested setting ids are wrong for this camera model
+                goproVersion13AndAbove = !goproVersion13AndAbove
+                return .failure(CameraError.invalidResponse)
+            case 18:
+                print("case 18")
+                print(messageHexString)
+                goproVersion11AndAbove = false
+                return .failure(CameraError.invalidResponse)
+            case 32:
+                goproVersion11AndAbove = true
+                return .failure(CameraError.invalidResponse)
+
+            case 40:
+                goproVersion11AndAbove = true
+                return .failure(CameraError.invalidResponse)
+
             default:
                 print("Unexpected response length: \(messageHexString.count)")
-                goproVersion13AndAbove = !goproVersion13AndAbove
                 print(messageHexString)
                 return .failure(CameraError.invalidResponse)
             }
         }
+        if(goproVersion11AndAbove == nil){
+            print("goproVersion11AndAbove is nil")
+            requestData(Data([0x02, 0x13, 0x63]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+        }
+        
         //payload size,statuses query type, battery, videotime, busy, encoding
         requestData(Data([0x05, 0x13, 0x46, 0x23, 0x06, 0x0A]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {
-           
+            
             //payload size,settings query type, resolution, fps, lenses
             if (self.goproVersion13AndAbove){
                 self.requestData(Data([0x04, 0x12, 0x02, 0xEA, 0xE5]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
@@ -292,6 +294,135 @@ extension Peripheral {
             
         }
     }
+    
+    func checkCameraTime() {
+        let serviceUUID = CBUUID(string: "FEA6")
+        let commandUUID = CBUUID(string: "B5F90072-AA8D-11E3-9046-0002A5D5C51B")
+        let commandResponseUUID = CBUUID(string: "B5F90073-AA8D-11E3-9046-0002A5D5C51B")
+        
+        func handleTimeResponse(_ data: Data) -> Result<Any, Error> {
+            var messageHexString = ""
+            for byte in data {
+                messageHexString += String(format: "%02X", byte)
+            }
 
+            switch messageHexString.count {
+            case 24:
+                let currentDatetimeBytes = Array(data)
+                let goproDatetimeSeconds = formatDatetime(currentDatetimeBytes: currentDatetimeBytes)
+                
+                let phoneTimeSeconds = Int64(Date().timeIntervalSince1970)
+                let timeDifference = abs(phoneTimeSeconds - goproDatetimeSeconds)
+                print("phoneTimeSeconds \(phoneTimeSeconds)")
+                print("goproDatetimeSeconds \(goproDatetimeSeconds)")
+
+                if timeDifference > 5 {
+                    print("Time difference between phone and GoPro is > 5 seconds: \(timeDifference)")
+                    setDateTimeOnGoPro()
+                } else {
+                    print("Time is synchronized. Difference: \(timeDifference) seconds")
+                }
+                
+                return .success("Time processed")
+            default:
+                print("Unexpected response length: \(messageHexString.count)")
+                goproVersion11AndAbove = true
+                print(messageHexString)
+                return .failure(CameraError.invalidResponse)
+            }
+        }
+        // Requesting time
+        requestData(Data([0x01, 0x0E]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleTimeResponse) {
+            print("Time requested")
+        }
+    }
+    
+    func setDateTimeOnGoPro() {
+        let serviceUUID = CBUUID(string: "FEA6")
+        let commandUUID = CBUUID(string: "B5F90072-AA8D-11E3-9046-0002A5D5C51B")
+        
+        // Determine the GoPro model
+        print("Setting UTC date and time on GoPro")
+        
+        let utcDateTime: Date
+        if (goproVersion11AndAbove == true) {
+            utcDateTime = Date()
+        } else {
+            utcDateTime = Date(timeIntervalSince1970: (Date().timeIntervalSince1970 - Double(TimeZone.current.secondsFromGMT())))
+        }
+        
+        // Extract date and time components
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: utcDateTime)
+        let month = calendar.component(.month, from: utcDateTime)
+        let day = calendar.component(.day, from: utcDateTime)
+        let hour = calendar.component(.hour, from: utcDateTime)
+        let minute = calendar.component(.minute, from: utcDateTime)
+        let second = calendar.component(.second, from: utcDateTime)
+        
+        // Convert year to bytes
+        let yearBytes = withUnsafeBytes(of: UInt16(year).bigEndian, Array.init)
+        
+        // Create date/time command
+        let dateTimeCmd: [UInt8] = [
+            0x09,  // Total number of bytes in the query
+            0x0D,  // Command ID for set date/time
+            0x07,
+            yearBytes[0],               // First byte of year
+            yearBytes[1],               // Second byte of year
+            UInt8(month),               // Month
+            UInt8(day),                 // Day
+            UInt8(hour),                // Hour
+            UInt8(minute),              // Minute
+            UInt8(second)               // Second
+        ]
+        
+        // Send the command using requestData
+        requestData(Data(dateTimeCmd), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: CBUUID(string: "B5F90073-AA8D-11E3-9046-0002A5D5C51B"), processData: { _ in return .success(()) }) {
+            print("Date and time set on GoPro")
+        }
+    }
+    
+    func timeStringToSecond(dateTimeString: String) -> TimeInterval? {
+        do {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy_MM_dd HH_mm_ss"
+            if (goproVersion11AndAbove == true){
+                let currentTimeZone = TimeZone.current
+                let offsetInSeconds = currentTimeZone.secondsFromGMT()
+                formatter.timeZone = TimeZone(secondsFromGMT: offsetInSeconds)
+            }
+            else{
+                formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            }
+           
+            guard let datetime = formatter.date(from: dateTimeString) else { return nil }
+            print("datetime parsed \(datetime)")
+            return datetime.timeIntervalSince1970
+           
+        } catch {
+            return nil
+        }
+    }
+    
+    
+    func formatDatetime(currentDatetimeBytes: [UInt8]) -> Int64 {
+        do {
+            // Extract date and time components from the bytes
+            let year = Int(UInt16(currentDatetimeBytes[4]) << 8 | UInt16(currentDatetimeBytes[5]))
+            let month = Int(currentDatetimeBytes[6])
+            let day = Int(currentDatetimeBytes[7])
+            let hour = Int(currentDatetimeBytes[8])
+            let minute = Int(currentDatetimeBytes[9])
+            let second = Int(currentDatetimeBytes[10])
+            
+            // Construct a date string
+            let stringTime = String(format: "%04d_%02d_%02d %02d_%02d_%02d", year, month, day, hour, minute, second)
+            let epochSecond = timeStringToSecond(dateTimeString: stringTime)
+            return Int64(epochSecond ?? 0)
+        } catch {
+            print("Failed to parse DateTime: \(error)")
+            return 0 // Provide a default return value to satisfy return type
+        }
+    }
 }
-
