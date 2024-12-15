@@ -14,7 +14,8 @@ struct ControlView: View {
 
     @State private var appStartedAt: Date = Date()
     @State var cameraStatus: CameraStatus?
-    @State var updateTimer: Timer? = nil
+    @State var updateStatusTimer: Timer? = nil
+    @State var updateTimeTimer: Timer? = nil
     @State var keepAppAliveTimer: Timer? = nil
     @State var terminationTimer: Timer? = nil
     @State var ensurePlayingTimer: Timer? = nil
@@ -60,12 +61,14 @@ struct ControlView: View {
         .onAppear {
             playerVC.playSampleSong()
             self.startUpdatingCameraStatus()
+            self.startUpdatingCameraTime()
             self.startKeepingAlive()
             self.startEnsurePlaying()
         }
         .onDisappear {
             print("disappered")
             self.playerVC.peripheral?.disconnect()
+            self.stopUpdatingCameraStatus()
             self.stopUpdatingCameraStatus()
             self.stopKeepingAlive()
             self.stopEnsurePlaying()
@@ -146,16 +149,30 @@ struct ControlView: View {
     
         func startUpdatingCameraStatus() {
             // Initialize the timer to call getCameraStatus every second
-            self.updateTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            self.updateStatusTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
                 self.updateStatus()
             }
         }
     
         func stopUpdatingCameraStatus() {
             // Invalidate the timer when it's no longer needed
-            self.updateTimer?.invalidate()
-            self.updateTimer = nil
+            self.updateStatusTimer?.invalidate()
+            self.updateStatusTimer = nil
         }
+    
+    func startUpdatingCameraTime() {
+        // Initialize the timer to call getCameraStatus every second
+        self.updateTimeTimer = Timer.scheduledTimer(withTimeInterval: 15, repeats: true) { _ in
+            self.updateTime()
+        }
+    }
+
+    func stopUpdatingCameraTime() {
+        // Invalidate the timer when it's no longer needed
+        self.updateTimeTimer?.invalidate()
+        self.updateTimeTimer = nil
+    }
+
     
         func startEnsurePlaying() {
             // Initialize the timer to call getCameraStatus every second
@@ -195,13 +212,19 @@ struct ControlView: View {
             self.terminationTimer = nil
         }
     
+        func updateTime(){
+            print("update time attempt")
+            playerVC.peripheral?.checkCameraTime()
+        }
+    
         func updateStatus() {
             print("update status attempt")
             let elapsedTime = Date().timeIntervalSince(appStartedAt)
             print("update settings debug1")
     
             playerVC.peripheral?.requestCameraInfo()
-    
+            //playerVC.peripheral?.checkCameraTime()
+
             let status = playerVC.peripheral?.status
             let settings = playerVC.peripheral?.settings
     

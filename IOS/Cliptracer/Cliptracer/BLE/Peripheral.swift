@@ -22,6 +22,7 @@ enum CameraError: Error {
 final class Peripheral: NSObject {
     
     var goproVersion13AndAbove = false
+    var goproVersion11AndAbove: Bool? = nil
 
     var status: CameraStatus?
     var settings: CameraSettings?

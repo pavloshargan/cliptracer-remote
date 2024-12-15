@@ -125,3 +125,4 @@ cython_debug/
 
 # Ignore MP4 files
 *.mp4
+/IOS/Cliptracer/Cliptracer.xcodeproj/xcuserdata

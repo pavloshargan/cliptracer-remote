@@ -130,8 +130,12 @@ extension CentralManager : CBCentralManagerDelegate {
         peripheral.onDisconnect?(error)
 
         DispatchQueue.main.async { [weak self] in
-            let index = self?.peripherals.firstIndex(of: peripheral)
-            self?.peripherals.remove(at: index!)
+            if let index = self?.peripherals.firstIndex(of: peripheral) {
+                self?.peripherals.remove(at: index)
+            } else {
+                print("Peripheral not found in the list.")
+            }
         }
+
     }
 }
