@@ -135,6 +135,11 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
                     settingsUpdatedAt = TimeProvider.getUTCTimeMilliseconds()
                     currentSettingsFormatted = formatAllSettings() as Map<String, String>
 
+                    if(currentSettingsFormatted["mode"] != "Video"){
+                        CoroutineScope(Dispatchers.IO).launch {
+                            setVideoMode()
+                        }
+                    }
 
                     val cameraDiskSpaceRaw = currentStatusesFormatted["camera_disk_space"]
                     val cameraDiskSpace =
@@ -447,6 +452,23 @@ class GoProBleManager(val ble: Bluetooth, var onGoproConnect: KFunction1<String,
         //checkStatus(receivedData.receive()) // this line waits until requested status is fully received.
                                              // It was commented out as it may hang forever if the gopro
                                             // suddenly disconnects. We have to add a timeout for this to work
+    }
+
+    @OptIn(ExperimentalUnsignedTypes::class)
+    @RequiresPermission(allOf = ["android.permission.BLUETOOTH_SCAN", "android.permission.BLUETOOTH_CONNECT"])
+    suspend fun setVideoMode(){
+        val setSettingCmd = ubyteArrayOf(0x04U, // total number of bytes in the query
+            0x3EU, // command id ( load preset)
+            0x02U, // preset id value size (4 bytes)
+            0x03U, 0xE8U)  // 1000 as uint32
+        val connectedGoProBLEMac = DataStore.lastConnectedGoProBLEMac
+        if (connectedGoProBLEMac != null) {
+            ble.writeCharacteristic(
+                connectedGoProBLEMac,
+                GoProUUID.CQ_COMMAND.uuid,
+                setSettingCmd
+            )
+        }
     }
 
     @OptIn(ExperimentalUnsignedTypes::class)
