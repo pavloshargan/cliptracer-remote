@@ -55,6 +55,7 @@ struct CameraSettings {
     var resolution_id: Int
     var fps_id: Int
     var lenses_id: Int
+    var mode_id: Int
 
     var description: String {
         print("lenses id \(lenses_id)")
@@ -64,7 +65,7 @@ struct CameraSettings {
         return "\(resolution)|\(fps)|\(lenses)"
     }
 
-    private func getResolutionDescription(id: Int) -> String {
+    func getResolutionDescription(id: Int) -> String {
         switch id {
         case 1: return "4k"
         case 4: return "2.7k"
@@ -82,7 +83,7 @@ struct CameraSettings {
         }
     }
 
-    private func getFpsDescription(id: Int) -> String {
+    func getFpsDescription(id: Int) -> String {
         switch id {
         case 0: return "240"
         case 1: return "120"
@@ -97,7 +98,7 @@ struct CameraSettings {
         }
     }
 
-    private func getLensesDescription(id: Int) -> String {
+    func getLensesDescription(id: Int) -> String {
         switch id {
         case 0: return "w"
         case 2: return "n"
@@ -110,6 +111,25 @@ struct CameraSettings {
         default: return "?"
         }
     }
+    
+    func getModeDescription(id: Int) -> String {
+        switch id {
+        case 12: return "Video"
+        case 15: return "Looping"
+        case 16: return "Photo"
+        case 17: return "Burst Photo"
+        case 18: return "Night Photo"
+        case 19: return "Time Lapse Video"
+        case 20: return "Time Lapse Photo"
+        case 21: return "Night Lapse Photo"
+        case 24: return "Night Lapse Photo"
+        case 25: return "Time Warp Video"
+        case 26: return "Night Lapse Video"
+        case 27: return "Slo-Mo"
+        default: return "?"
+        }
+    }
+    
 }
 
 
@@ -185,7 +205,7 @@ extension Peripheral {
         let serviceUUID = CBUUID(string: "FEA6")
         let commandUUID = CBUUID(string: "B5F90076-AA8D-11E3-9046-0002A5D5C51B")
         let commandResponseUUID = CBUUID(string: "B5F90077-AA8D-11E3-9046-0002A5D5C51B")
-
+        print("goproVersion13AndAbove \(goproVersion13AndAbove) \n goproVersion11AndAbove \(goproVersion11AndAbove)")
         func handleDataResponse(_ data: Data) -> Result<Any, Error> {
             var messageHexString = ""
             for i in 0 ..< data.count {
@@ -194,77 +214,91 @@ extension Peripheral {
             print("count \(messageHexString.count)")
             switch messageHexString.count {
             case 36:
-                print(messageHexString)
-                
-                // Helper function to find a value after a specific prefix
-                func extractValue(after prefix: String, valueSize: Int, in hexString: String) -> String? {
-                    guard let range = hexString.range(of: prefix) else {
-                        return nil
+                if messageHexString.starts(with: "1113"){
+                    print(messageHexString)
+                    
+                    // Helper function to find a value after a specific prefix
+                    func extractValue(after prefix: String, valueSize: Int, in hexString: String) -> String? {
+                        guard let range = hexString.range(of: prefix) else {
+                            return nil
+                        }
+                        let valueStartIndex = hexString.index(range.upperBound, offsetBy: 0) // Value starts right after the prefix
+                        let valueEndIndex = hexString.index(valueStartIndex, offsetBy: valueSize * 2 - 1) // Each byte = 2 hex chars
+                        return String(hexString[valueStartIndex...valueEndIndex])
                     }
-                    let valueStartIndex = hexString.index(range.upperBound, offsetBy: 0) // Value starts right after the prefix
-                    let valueEndIndex = hexString.index(valueStartIndex, offsetBy: valueSize * 2 - 1) // Each byte = 2 hex chars
-                    return String(hexString[valueStartIndex...valueEndIndex])
+                    
+                    // Extract video time (4 bytes after "2304")
+                    let videoTimeHex = extractValue(after: "2304", valueSize: 4, in: messageHexString)
+                    let videoTime = Int(videoTimeHex ?? "0", radix: 16) ?? 0
+                    
+                    // Extract battery percentage (1 byte after "4601")
+                    let batteryHex = extractValue(after: "4601", valueSize: 1, in: messageHexString)
+                    let batteryPercents = Int(batteryHex ?? "0", radix: 16) ?? 0
+                    
+                    // Extract encoding (1 byte after "0A01")
+                    let encodingHex = extractValue(after: "0A01", valueSize: 1, in: messageHexString)
+                    let encoding = (encodingHex == "01")
+                    
+                    // Extract busy status (1 byte after "0601")
+                    let busyHex = extractValue(after: "0601", valueSize: 1, in: messageHexString)
+                    let busy = (busyHex == "01")
+                    
+                    // Create CameraStatus object
+                    let res = CameraStatus(battery: batteryPercents, videoTime: videoTime, encoding: encoding, busy: busy)
+                    print(res.description)
+                    return .success(res)
+                } else {
+                    return .failure(CameraError.invalidResponse)
                 }
-                
-                // Extract video time (4 bytes after "2304")
-                let videoTimeHex = extractValue(after: "2304", valueSize: 4, in: messageHexString)
-                let videoTime = Int(videoTimeHex ?? "0", radix: 16) ?? 0
-                
-                // Extract battery percentage (1 byte after "4601")
-                let batteryHex = extractValue(after: "4601", valueSize: 1, in: messageHexString)
-                let batteryPercents = Int(batteryHex ?? "0", radix: 16) ?? 0
-                
-                // Extract encoding (1 byte after "0A01")
-                let encodingHex = extractValue(after: "0A01", valueSize: 1, in: messageHexString)
-                let encoding = (encodingHex == "01")
-                
-                // Extract busy status (1 byte after "0601")
-                let busyHex = extractValue(after: "0601", valueSize: 1, in: messageHexString)
-                let busy = (busyHex == "01")
-                
-                // Create CameraStatus object
-                let res = CameraStatus(battery: batteryPercents, videoTime: videoTime, encoding: encoding, busy: busy)
-                print(res.description)
-                return .success(res)
-                
-                
-            case 24:
-                print(messageHexString)
-                
-                // Helper function to find a value after a setting code
-                func extractValue(after settingCode: String, in hexString: String) -> Int? {
-                    guard let range = hexString.range(of: "\(settingCode)01") else {
-                        return nil
-                    }
-                    let valueStartIndex = hexString.index(range.upperBound, offsetBy: 0) // Value is immediately after "01"
-                    let valueEndIndex = hexString.index(valueStartIndex, offsetBy: 1)
-                    return Int(hexString[valueStartIndex...valueEndIndex], radix: 16)
-                }
-                
-                // Extract values for resolution, fps, and lenses
-                let resolutionCode = extractValue(after: "02", in: messageHexString) ?? 0
-                let fpsCode = extractValue(after: "03", in: messageHexString) ?? extractValue(after: "EA", in: messageHexString) ?? 0
-                let lensesCode = extractValue(after: "79", in: messageHexString) ?? extractValue(after: "E5", in: messageHexString) ?? 0
-                
-                // Create CameraSettings object
-                let res = CameraSettings(resolution_id: resolutionCode, fps_id: fpsCode, lenses_id: lensesCode)
-                print(res.description)
-                return .success(res)
-            case 12:
-                print("case 12")
-                print(messageHexString)
-                // repsonse len 12 means that some setting were not fetched, and it is a sign that the requested setting ids are wrong for this camera model
-                goproVersion13AndAbove = !goproVersion13AndAbove
-                return .failure(CameraError.invalidResponse)
             case 18:
                 print("case 18")
                 print(messageHexString)
+                goproVersion13AndAbove = !goproVersion13AndAbove
+                return .failure(CameraError.invalidResponse)
+            case 24:
+                print("case 24")
                 goproVersion11AndAbove = false
                 return .failure(CameraError.invalidResponse)
             case 32:
                 goproVersion11AndAbove = true
                 return .failure(CameraError.invalidResponse)
-
+            case 30:
+                print("case 30")
+                if messageHexString.starts(with: "0E12"){
+                    print(messageHexString)
+                    
+                    // Helper function to find a value after a setting code
+                    func extractValue(after settingCode: String, in hexString: String) -> Int? {
+                        guard let range = hexString.range(of: "\(settingCode)01") else {
+                            return nil
+                        }
+                        let valueStartIndex = hexString.index(range.upperBound, offsetBy: 0) // Value is immediately after "01"
+                        let valueEndIndex = hexString.index(valueStartIndex, offsetBy: 1)
+                        return Int(hexString[valueStartIndex...valueEndIndex], radix: 16)
+                    }
+                    
+                    // Extract values for resolution, fps, and lenses
+                    let resolutionCode = extractValue(after: "02", in: messageHexString) ?? 0
+                    let fpsCode = extractValue(after: "03", in: messageHexString) ?? extractValue(after: "EA", in: messageHexString) ?? 0
+                    let lensesCode = extractValue(after: "79", in: messageHexString) ?? extractValue(after: "E5", in: messageHexString) ?? 0
+                    
+                    let modeCode = extractValue(after: "90", in: messageHexString) ?? 12
+                    
+                    // Create CameraSettings object
+                    let res = CameraSettings(resolution_id: resolutionCode, fps_id: fpsCode, lenses_id: lensesCode, mode_id: modeCode)
+                    
+                    if (res.getModeDescription(id: modeCode) != "Video"){
+                        setVideoMode()
+                    }
+                    
+                    print(res.description)
+                    return .success(res)
+                    
+                } else{
+                    return .failure(CameraError.invalidResponse)
+                    
+                }
+                
             case 40:
                 goproVersion11AndAbove = true
                 return .failure(CameraError.invalidResponse)
@@ -275,9 +309,10 @@ extension Peripheral {
                 return .failure(CameraError.invalidResponse)
             }
         }
+        
         if(goproVersion11AndAbove == nil){
             print("goproVersion11AndAbove is nil")
-            requestData(Data([0x02, 0x13, 0x63]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+            requestData(Data([0x03,0x02, 0x13, 0x63]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
         }
         
         //payload size,statuses query type, battery, videotime, busy, encoding
@@ -285,11 +320,11 @@ extension Peripheral {
             
             //payload size,settings query type, resolution, fps, lenses
             if (self.goproVersion13AndAbove){
-                self.requestData(Data([0x04, 0x12, 0x02, 0xEA, 0xE5]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+                self.requestData(Data([0x05, 0x12, 0x02, 0xEA, 0xE5, 0x90]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
             }
             else{
                 // resolution, fps, lenses
-                self.requestData(Data([0x04, 0x12, 0x02, 0x03, 0x79]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
+                self.requestData(Data([0x05, 0x12, 0x02, 0x03, 0x79, 0x90]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleDataResponse) {}
             }
             
         }
@@ -334,6 +369,19 @@ extension Peripheral {
         // Requesting time
         requestData(Data([0x01, 0x0E]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleTimeResponse) {
             print("Time requested")
+        }
+    }
+    
+    func setVideoMode(){
+        let serviceUUID = CBUUID(string: "FEA6")
+        let commandUUID = CBUUID(string: "B5F90072-AA8D-11E3-9046-0002A5D5C51B")
+        let commandResponseUUID = CBUUID(string: "B5F90073-AA8D-11E3-9046-0002A5D5C51B")
+        
+        func handleResponse(_ data: Data) -> Result<Any, Error> {return .success("request sent")}
+        
+        // [total number of bytes in the query, command id ( load preset), preset id value size (4 bytes), 1000 as uint32]
+        requestData(Data([0x04, 0x3E, 0x02, 0x03, 0xE8]), serviceUUID: serviceUUID, commandUUID: commandUUID, commandResponseUUID: commandResponseUUID, processData: handleResponse) {
+                print("video mode requested")
         }
     }
     
