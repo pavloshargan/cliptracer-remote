@@ -295,8 +295,8 @@ class AudioPlayerBridge: UIViewController {
         print("right pressed")
         self.setHighlight()
     }
-    func playSampleSong() {
-        if let path = Bundle.main.path(forResource:"pulse_audio", ofType:"mp3") {
+    func playSampleSong(songName:String = "silent_track") {
+        if let path = Bundle.main.path(forResource:songName, ofType:"mp3") {
             let url = URL(fileURLWithPath: path)
             do {
                 let commandCenter = MPRemoteCommandCenter.shared()

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AC23239C2D0FC71300BAE501 /* beep150min.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC23239B2D0FC71300BAE501 /* beep150min.mp3 */; };
+		AC23239E2D0FC99300BAE501 /* silent_track.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC23239D2D0FC99300BAE501 /* silent_track.mp3 */; };
 		AC9C3F982BC24F1300EDF0AB /* CliptracerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3F972BC24F1300EDF0AB /* CliptracerApp.swift */; };
 		AC9C3F9A2BC24F1300EDF0AB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3F992BC24F1300EDF0AB /* ContentView.swift */; };
 		AC9C3F9C2BC24F1600EDF0AB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3F9B2BC24F1600EDF0AB /* Assets.xcassets */; };
@@ -17,12 +19,13 @@
 		AC9C3FAE2BC252D000EDF0AB /* CameraSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FAD2BC252D000EDF0AB /* CameraSelectionView.swift */; };
 		AC9C3FB02BC252E100EDF0AB /* AudioPlayerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FAF2BC252E100EDF0AB /* AudioPlayerBridge.swift */; };
 		AC9C3FB22BC252F300EDF0AB /* ControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC9C3FB12BC252F300EDF0AB /* ControlView.swift */; };
-		AC9C3FB52BC2593900EDF0AB /* pulse_audio.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3FB42BC2593900EDF0AB /* pulse_audio.mp3 */; };
 		AC9C3FB72BC327BD00EDF0AB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3FB62BC26CBF00EDF0AB /* PrivacyInfo.xcprivacy */; };
 		AC9C3FBB2BC6373400EDF0AB /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AC9C3FBA2BC6373400EDF0AB /* Launch Screen.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AC23239B2D0FC71300BAE501 /* beep150min.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = beep150min.mp3; sourceTree = "<group>"; };
+		AC23239D2D0FC99300BAE501 /* silent_track.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = silent_track.mp3; sourceTree = "<group>"; };
 		AC9C3F942BC24F1300EDF0AB /* Cliptracer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Cliptracer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC9C3F972BC24F1300EDF0AB /* CliptracerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CliptracerApp.swift; sourceTree = "<group>"; };
 		AC9C3F992BC24F1300EDF0AB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -35,7 +38,6 @@
 		AC9C3FAF2BC252E100EDF0AB /* AudioPlayerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioPlayerBridge.swift; sourceTree = "<group>"; };
 		AC9C3FB12BC252F300EDF0AB /* ControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlView.swift; sourceTree = "<group>"; };
 		AC9C3FB32BC2557F00EDF0AB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		AC9C3FB42BC2593900EDF0AB /* pulse_audio.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = pulse_audio.mp3; sourceTree = "<group>"; };
 		AC9C3FB62BC26CBF00EDF0AB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AC9C3FBA2BC6373400EDF0AB /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -54,7 +56,8 @@
 		AC9C3F8B2BC24F1300EDF0AB = {
 			isa = PBXGroup;
 			children = (
-				AC9C3FB42BC2593900EDF0AB /* pulse_audio.mp3 */,
+				AC23239D2D0FC99300BAE501 /* silent_track.mp3 */,
+				AC23239B2D0FC71300BAE501 /* beep150min.mp3 */,
 				AC9C3F962BC24F1300EDF0AB /* Cliptracer */,
 				AC9C3F952BC24F1300EDF0AB /* Products */,
 			);
@@ -170,11 +173,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AC23239C2D0FC71300BAE501 /* beep150min.mp3 in Resources */,
 				AC9C3F9F2BC24F1600EDF0AB /* Preview Assets.xcassets in Resources */,
 				AC9C3F9C2BC24F1600EDF0AB /* Assets.xcassets in Resources */,
+				AC23239E2D0FC99300BAE501 /* silent_track.mp3 in Resources */,
 				AC9C3FB72BC327BD00EDF0AB /* PrivacyInfo.xcprivacy in Resources */,
 				AC9C3FBB2BC6373400EDF0AB /* Launch Screen.storyboard in Resources */,
-				AC9C3FB52BC2593900EDF0AB /* pulse_audio.mp3 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

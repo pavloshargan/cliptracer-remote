@@ -28,14 +28,16 @@ struct ControlView: View {
     @State var stateStr = "Not Connected"
     var playerVC: AudioPlayerBridge
 
-
+    @State private var showingSettings = false
+    @AppStorage("beepDuringRecording") private var beepDuringRecording: Bool = false
+    @State private var showingCameraInfo = false
     var recordingSeconds: Int {
         guard let startTime = recordingStartTime else { return 0 }
         return Int(Date().timeIntervalSince(startTime))
     }
     
-    
-    
+   
+
     
     var body: some View {
         GeometryReader { geometry in
@@ -59,7 +61,12 @@ struct ControlView: View {
             }
         }
         .onAppear {
-            playerVC.playSampleSong()
+            if beepDuringRecording {
+                playerVC.playSampleSong(songName: "beep150min")
+            } else {
+                playerVC.playSampleSong(songName: "silent_track")
+            }
+            
             self.startUpdatingCameraStatus()
             self.startUpdatingCameraTime()
             self.startKeepingAlive()
@@ -82,15 +89,24 @@ struct ControlView: View {
                         .foregroundColor(.blue) // Add color for visibility
                 }
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    showingSettings.toggle()
+                }) {
+                    Image(systemName: "gearshape")
+                        .foregroundColor(.blue) // Add color for visibility
+                }
+            }
         }
         .sheet(isPresented: $showingCameraInfo) {
             cameraInfoSheet
         }
+        .sheet(isPresented: $showingSettings) {
+            settingsSheet
+        }
     }
 
-    
-    @State private var showingCameraInfo = false
-        var cameraInfoSheet: some View {
+    var cameraInfoSheet: some View {
             NavigationView {
                 List {
                     Text("""
@@ -140,6 +156,42 @@ struct ControlView: View {
                 })
             }
         }
+    
+        private func handleToggleChange(_ isOn: Bool) {
+            print("handleToggleChange")
+            // Execute the desired behavior
+            if isOn {
+                playerVC.playSampleSong(songName: "beep150min")
+            } else {
+                playerVC.playSampleSong(songName: "silent_track")
+            }
+        }
+
+    
+        var settingsSheet: some View {
+            NavigationView {
+                Form {
+                    Section(header: Text("Recording Settings")) {
+                        Toggle("Beep during recording", isOn: Binding(
+                            get: { beepDuringRecording },
+                            set: { newValue in
+                                beepDuringRecording = newValue
+                                handleToggleChange(newValue) // Ensure changes are saved and acted upon
+                            }
+                        ))
+                    }
+
+//                    Section(header: Text("Other Settings")) {
+//                        Text("Placeholder for additional settings")
+//                    }
+                }
+                .navigationBarTitle("Settings", displayMode: .inline)
+                .navigationBarItems(trailing: Button("Done") {
+                    showingSettings.toggle()
+                })
+            }
+        }
+    
 
         init(player: AudioPlayerBridge) {
             print("calling view model")

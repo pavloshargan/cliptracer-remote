@@ -14,7 +14,7 @@ struct IntroView: View {
     @Binding var hasFinishedIntro: Bool
     var body: some View {
         VStack(spacing: 20) {
-            Text("Welcome to Cliptracer Controller!")
+            Text("Welcome to Cliptracer Remote!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .multilineTextAlignment(.center)
@@ -62,7 +62,7 @@ struct CameraSelectionView: View {
             NavigationLink(destination: ControlViewDestination, isActive: $showControlView) { EmptyView() }
 
             if scanner.peripherals.isEmpty {
-                Text("The GoPro camera should appear in this list. Ensure you've paired it in GoPro Quick and turned it on")
+                Text("The GoPro camera should appear in this list. Ensure it is paired in GoPro Quik and turned on.\nIf the camera doesn't appear in the list within 15 seconds, turn it off using the side button and wait a bit longer.")
                     .foregroundColor(.gray)
                     .padding([.leading, .trailing])
                     .multilineTextAlignment(.center)
