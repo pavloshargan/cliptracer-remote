@@ -234,9 +234,9 @@ class SilentAudioService : Service() {
     }
 
     fun initializeMediaPlayer(beepDuringRecording: Boolean) {
-        var resourceId = R.raw.pulse_audio
+        var resourceId = R.raw.beep150min
         if(!beepDuringRecording){
-            resourceId = R.raw.beep150min
+            resourceId = R.raw.silent_track
         }
         val afd = applicationContext.resources.openRawResourceFd(resourceId)
         if (afd == null) {
