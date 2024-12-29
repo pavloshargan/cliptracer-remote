@@ -76,7 +76,6 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-*.png
 # Jupyter Notebook
 .ipynb_checkpoints
 
