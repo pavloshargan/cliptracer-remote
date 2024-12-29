@@ -17,5 +17,7 @@ data class UIState(
         recording = false
 
     ),
-    val showSettings: Boolean = false
+    val showSettings: Boolean = false,
+    val showInfo: Boolean = false
+
 )

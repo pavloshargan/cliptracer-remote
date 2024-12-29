@@ -61,6 +61,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation ("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.5.0") // For coroutine testing
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -112,8 +112,6 @@ class MainActivity : ComponentActivity() {
             val mainIntent = MainIntent(appBusinessLogic, lifecycleScope)
             mainIntent.loadAndApplySettings()
 
-
-
             setContent {
                 ClipTracerTheme {
                     MainScreen(mainIntent)

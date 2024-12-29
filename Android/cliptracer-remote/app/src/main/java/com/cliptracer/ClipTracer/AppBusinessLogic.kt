@@ -11,6 +11,9 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.cliptracer.ClipTracer.gopronetwork.Bluetooth
@@ -24,6 +27,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import androidx.datastore.preferences.core.edit
+
 
 data class BusinessState(
     var settings: Map<String, String> = mapOf(),
@@ -84,6 +92,24 @@ class AppBusinessLogic(
     var showTriggerOverlay = false
     var triggerOverlayText = ""
     var showBluetoothDevicesScreen = (!bleConnected)
+
+
+
+    val Context.dataStore: androidx.datastore.core.DataStore<Preferences> by preferencesDataStore(name = "cliptracer_preferences")
+    private val BEEP_DURING_RECORDING_KEY = booleanPreferencesKey("beep_during_recording")
+
+    suspend fun saveBeepSetting(value: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[BEEP_DURING_RECORDING_KEY] = value
+        }
+    }
+
+    fun getBeepSetting(): Flow<Boolean> {
+        return context.dataStore.data
+            .map { preferences ->
+                preferences[BEEP_DURING_RECORDING_KEY] ?: false // Default value is false
+            }
+    }
 
     fun populateBusinessState(){
         synchronized(businessStateUpdatelock) {

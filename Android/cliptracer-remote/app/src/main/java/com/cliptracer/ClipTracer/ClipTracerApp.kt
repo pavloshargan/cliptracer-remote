@@ -25,10 +25,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import android.annotation.SuppressLint
 import android.bluetooth.le.ScanResult
+import android.content.Context
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.widget.ToggleButton
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -42,6 +44,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -51,6 +54,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.compose.material3.TopAppBar
@@ -58,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 
 fun format_kb(kilobytes: Long): String {
@@ -110,9 +116,11 @@ enum class CurrentScreen {
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("MissingPermission")
 @Composable
-fun BluetoothDevicesScreen(mainIntent: MainIntent, scannedDevices: List<ScanResult>,
-                           onTap: (ScanResult) -> Unit) {
-
+fun BluetoothDevicesScreen(
+    mainIntent: MainIntent,
+    scannedDevices: List<ScanResult>,
+    onTap: (ScanResult) -> Unit
+) {
     val headerTitle = remember { mutableStateOf("Bluetooth Devices") }
 
     BackHandler(enabled = true) {
@@ -126,7 +134,11 @@ fun BluetoothDevicesScreen(mainIntent: MainIntent, scannedDevices: List<ScanResu
 
         val bleConnected = mainIntent.state.value.businessState.bleConnected
         val targetGopro = mainIntent.state.value.businessState.settings["target_gopro"]
-        val displayText = if (targetGopro == "any") "GoPro devices will appear here." else "Going to autoconnect to ${targetGopro}. You can put the phone in the pocket now."
+        val displayText = if (targetGopro == "any") {
+            "GoPro devices will appear here."
+        } else {
+            "Going to autoconnect to $targetGopro. You can put the phone in the pocket now."
+        }
 
         Box(modifier = Modifier.weight(1f)) {
             if (scannedDevices.isEmpty() && !bleConnected) {
@@ -146,17 +158,21 @@ fun BluetoothDevicesScreen(mainIntent: MainIntent, scannedDevices: List<ScanResu
                         ListItem(
                             modifier = Modifier
                                 .clickable {
-                                    headerTitle.value = "Connecting to ${scannedDevice.device.name ?: scannedDevice.device.address}..."
+                                    headerTitle.value =
+                                        "Connecting to ${scannedDevice.device.name ?: scannedDevice.device.address}..."
                                     CoroutineScope(Dispatchers.Main).launch {
+                                        // Delay and reset title after timeout
                                         delay(15000)
-                                        headerTitle.value = "Please try again"
+                                        if (!mainIntent.state.value.businessState.bleConnected) {
+                                            headerTitle.value = "Please try again"
+                                        }
                                     }
                                     onTap(scannedDevice)
                                 }
-                                .padding(vertical = 8.dp, horizontal = 16.dp), // Added horizontal padding here
+                                .padding(vertical = 8.dp, horizontal = 16.dp), // Horizontal padding
                             headlineContent = {
                                 Text(
-                                    text = scannedDevice.device.name ?: scannedDevice.device.address,
+                                    text = scannedDevice.device.name ?: "Unknown Device",
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -168,6 +184,7 @@ fun BluetoothDevicesScreen(mainIntent: MainIntent, scannedDevices: List<ScanResu
         }
     }
 }
+
 
 @Composable
 fun MainScreen(mainIntent: MainIntent) {
@@ -216,50 +233,57 @@ fun WelcomeScreen(onContinueClicked: () -> Unit) {
     }
 }
 
+
+
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
-    // State for showing the info popup
-    val showInfoPopup = remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    // Use a Row to center the title and place the icon on the far right
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(DataStore.currentGoProBLEName ?: "", textAlign = TextAlign.Center)
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClicked) {
-                        Icon(Icons.Filled.ArrowBack, "Back")
-                    }
-                },
-                actions = {
-                    // Info icon that toggles the visibility of the popup
-                    IconButton(onClick = { showInfoPopup.value = true }) {
-                        Icon(Icons.Filled.Info, "Info")
-                    }
-                }
-            )
+    val uiState = mainIntent.state.value
+
+    var showButtonPressedOverlay by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val vibratorManager =
+            getSystemService(context, VibratorManager::class.java) as VibratorManager
+        vibratorManager.defaultVibrator
+    } else {
+        getSystemService(context, Vibrator::class.java) as Vibrator
+    }
+
+    fun vibrate(pattern: LongArray) {
+        if (vibrator.hasVibrator()) {
+            // For newer versions (API 26+), use VibrationEffect
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = VibrationEffect.createWaveform(pattern, -1) // -1: Do not repeat
+                vibrator.vibrate(effect)
+
+            } else {
+                vibrator.vibrate(pattern, -1)
+            }
         }
-    ) {
-        if (showInfoPopup.value) {
-            AlertDialog(
-                onDismissRequest = { showInfoPopup.value = false },
-                confirmButton = {
-                    Button(onClick = { showInfoPopup.value = false }) {
-                        Text("Close")
-                    }
-                },
-                text = {
-                    Column {
-                        Text("""
+    }
+
+
+
+    if (uiState.showSettings) {
+        SettingsScreen(mainIntent)
+    }
+
+    else if (uiState.showInfo) {
+        AlertDialog(
+            onDismissRequest = { mainIntent.setShowInfo(false) },
+            confirmButton = {
+                Button(onClick = { mainIntent.setShowInfo(false) }) {
+                    Text("Close")
+                }
+            },
+            text = {
+                Column {
+                    Text("""
                             Camera Status:
                             
                             Ready - powered on, ready to record
@@ -267,9 +291,9 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                             Not Connected - camera not ready
                         """.trimIndent())
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("""
+                    Text("""
                             Camera Settings:
                             
                             Field 1: resolution
@@ -278,9 +302,9 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                             Field 4: battery
                             Field 5: memory left                        """.trimIndent())
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("""
+                    Text("""
                             Lenses Abbreviations:
                             
                             w - wide
@@ -293,132 +317,142 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                             hv - hyper view
                         """.trimIndent())
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("""
+                    Text("""
                             Stay tuned:
                             
                             cliptracer.com
                             Youtube: @Cliptracer
                         """.trimIndent())
-                    }
-                }
-            )
-        }
-
-        var showButtonPressedOverlay by remember { mutableStateOf(false) }
-        val uiState = mainIntent.state.value
-        val context = LocalContext.current
-
-        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val vibratorManager =
-                getSystemService(context, VibratorManager::class.java) as VibratorManager
-            vibratorManager.defaultVibrator
-        } else {
-            getSystemService(context, Vibrator::class.java) as Vibrator
-        }
-
-        fun vibrate(pattern: LongArray) {
-            if (vibrator.hasVibrator()) {
-                // For newer versions (API 26+), use VibrationEffect
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    val effect = VibrationEffect.createWaveform(pattern, -1) // -1: Do not repeat
-                    vibrator.vibrate(effect)
-
-                } else {
-                    vibrator.vibrate(pattern, -1)
                 }
             }
-        }
+        )
+    }
 
-        if (uiState.businessState.showBluetoothDevicesScreen) {
-            BluetoothDevicesScreen(mainIntent = mainIntent,
-                scannedDevices = uiState.businessState.bluetoothDeviceList,
-                onTap = { tappedDevice ->
-                    mainIntent.connectTappedGoPro(tappedDevice)
-                })
-        } else {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 20.dp)
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Spacer(modifier = Modifier.size(20.dp))
+    else {
 
-                TextLabel(
-                    text1 = uiState.businessState.currentGoPro,
-                    icon1 = if (uiState.businessState.bleConnected) {
-                        Icons.Filled.Bluetooth
-                    } else {
-                        Icons.Filled.BluetoothDisabled
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        // Use a Row to center the title and place the icon on the far right
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(DataStore.currentGoProBLEName ?: "", textAlign = TextAlign.Center)
+                        }
                     },
-                    scale = 20.sp
-                )
-                Spacer(modifier = Modifier.size(40.dp))
-
-                Text(
-                    text = uiState.businessState.artist,
-                    style = MaterialTheme.typography.titleLarge.copy(),
-                    color = Color(0xFFFFA500), // Orange color for the text
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth(Alignment.CenterHorizontally)
-                )
-
-                TextLabel(
-                    text1 = uiState.businessState.title,
-                    icon1 = Icons.Filled.FiberManualRecord,
-                    scale = 20.sp
-                )
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentWidth(Alignment.CenterHorizontally)
-                ) {
-                    Button(
-                        onClick = { mainIntent.powerOffOrOn() }
-                    ) {
-                        Text(text = if (uiState.businessState.bleConnected) "Off" else "On")
-                    }
-
-                    Spacer(modifier = Modifier.size(6.dp))
-                    Button(onClick = {
-                        if (uiState.businessState.recording) {
-                            // Stop recording
-                            mainIntent.stopRecording()
-                            mainIntent.setTriggerOverlayText("Stop recording")
-                            vibrate(longArrayOf(0, 100, 150, 100))
-                        } else {
-                            // Start recording
-                            mainIntent.startRecording()
-                            mainIntent.setTriggerOverlayText("Start recording")
-                            vibrate(longArrayOf(0, 200))
+                    navigationIcon = {
+                        IconButton(onClick = onBackClicked) {
+                            Icon(Icons.Filled.ArrowBack, "Back")
                         }
-                        mainIntent.showTriggerOverlay()
-                        showButtonPressedOverlay = true
-                    }) {
-                        if (uiState.businessState.bleConnected && uiState.businessState.recording){
-                            Text(text = "Stop&Off")
-                        } else if (uiState.businessState.bleConnected){
-                            Text(text = "Start")
-                        } else {
-                            Text(text = "On&Start")
+                    },
+                    actions = {
+                        // Info icon that toggles the visibility of the popup
+                        IconButton(onClick = { mainIntent.setShowInfo(true) }) {
+                            Icon(Icons.Filled.Info, "Info")
+                        }
+                        IconButton(onClick = { mainIntent.setShowSettings(true) }) {
+                            Icon(Icons.Filled.Settings, "Settings")
                         }
                     }
-                    Spacer(modifier = Modifier.size(6.dp))
-
-                    Button(
-                        onClick = { mainIntent.addHighlight() })
-                    { Text(text = "Highlight") }
-                }
+                )
             }
-            if (uiState.businessState.showTriggerOverlay) {
-                AnimatedOverlay(show = true, text = uiState.businessState.triggerOverlayText)
+        ) {
 
-                LaunchedEffect(key1 = uiState.businessState.triggerOverlayText) {
+
+            if (uiState.businessState.showBluetoothDevicesScreen) {
+                BluetoothDevicesScreen(mainIntent = mainIntent,
+                    scannedDevices = uiState.businessState.bluetoothDeviceList,
+                    onTap = { tappedDevice ->
+                        mainIntent.connectTappedGoPro(tappedDevice)
+                    })
+            } else {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Spacer(modifier = Modifier.size(20.dp))
+
+                    TextLabel(
+                        text1 = uiState.businessState.currentGoPro,
+                        icon1 = if (uiState.businessState.bleConnected) {
+                            Icons.Filled.Bluetooth
+                        } else {
+                            Icons.Filled.BluetoothDisabled
+                        },
+                        scale = 20.sp
+                    )
+                    Spacer(modifier = Modifier.size(40.dp))
+
+                    Text(
+                        text = uiState.businessState.artist,
+                        style = MaterialTheme.typography.titleLarge.copy(),
+                        color = Color(0xFFFFA500), // Orange color for the text
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    )
+
+                    TextLabel(
+                        text1 = uiState.businessState.title,
+                        icon1 = Icons.Filled.FiberManualRecord,
+                        scale = 20.sp
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentWidth(Alignment.CenterHorizontally)
+                    ) {
+                        Button(
+                            onClick = { mainIntent.powerOffOrOn() }
+                        ) {
+                            Text(text = if (uiState.businessState.bleConnected) "Off" else "On")
+                        }
+
+                        Spacer(modifier = Modifier.size(6.dp))
+                        Button(onClick = {
+                            if (uiState.businessState.recording) {
+                                // Stop recording
+                                mainIntent.stopRecording()
+                                mainIntent.setTriggerOverlayText("Stop recording")
+                                vibrate(longArrayOf(0, 100, 150, 100))
+                            } else {
+                                // Start recording
+                                mainIntent.startRecording()
+                                mainIntent.setTriggerOverlayText("Start recording")
+                                vibrate(longArrayOf(0, 200))
+                            }
+                            mainIntent.showTriggerOverlay()
+                            showButtonPressedOverlay = true
+                        }) {
+                            if (uiState.businessState.bleConnected && uiState.businessState.recording) {
+                                Text(text = "Stop&Off")
+                            } else if (uiState.businessState.bleConnected) {
+                                Text(text = "Start")
+                            } else {
+                                Text(text = "On&Start")
+                            }
+                        }
+                        Spacer(modifier = Modifier.size(6.dp))
+
+                        Button(
+                            onClick = { mainIntent.addHighlight() })
+                        { Text(text = "Highlight") }
+                    }
+                }
+                if (uiState.businessState.showTriggerOverlay) {
+                    AnimatedOverlay(show = true, text = uiState.businessState.triggerOverlayText)
+
+                    LaunchedEffect(key1 = uiState.businessState.triggerOverlayText) {
+                    }
                 }
             }
         }

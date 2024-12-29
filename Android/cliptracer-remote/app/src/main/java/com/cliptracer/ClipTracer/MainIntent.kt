@@ -46,6 +46,11 @@ class MainIntent(private val appBusinessLogic: AppBusinessLogic, private val cor
         _state.value = _state.value.copy(showSettings = show)
     }
 
+    fun setShowInfo(show: Boolean) {
+        Log.d("","MI setShowInfo.. $show")
+        _state.value = _state.value.copy(showInfo = show)
+    }
+
     fun showTriggerOverlay(){
         CoroutineScope(Dispatchers.IO).launch {
             appBusinessLogic.showTriggerOverlay = true
@@ -84,4 +89,16 @@ class MainIntent(private val appBusinessLogic: AppBusinessLogic, private val cor
     fun powerOffOrOn(){
         appBusinessLogic.powerOffOrOn()
     }
+
+    fun saveBeepSetting(value: Boolean){
+        CoroutineScope(Dispatchers.IO).launch {
+            appBusinessLogic.saveBeepSetting(value)
+        }
+    }
+
+    fun getBeepSetting(){
+        appBusinessLogic.getBeepSetting()
+    }
+
+
 }
