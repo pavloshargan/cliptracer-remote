@@ -67,7 +67,9 @@ fun SettingsScreen(mainIntent: MainIntent) {
             },
             onSave = {
                 mainIntent.onSettingsChange(tempSettings)
-                mainIntent.setShowSettings(false)
+            },
+            onBeepDuringRecordingChange = { value ->
+                mainIntent.setBeepDuringRecording(value=="True")
             },
             onDismissRequest = {
                 mainIntent.setShowSettings(false)
@@ -86,6 +88,7 @@ fun SettingsView(
     settings: Map<String, String>,
     onSettingChange: (Map<String, String>) -> Unit,
     onSave: () -> Unit,
+    onBeepDuringRecordingChange: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier
@@ -117,10 +120,13 @@ fun SettingsView(
                     settingAlias = key,
                     settingValue = value,
                     onValueChange = { newValue ->
-                        onSettingChange(settings.toMutableMap().apply { put(key, newValue)
-                            onSave() // save all settings when some setting is changed
-
+                        onSettingChange(settings.toMutableMap().apply {
+                            put(key, newValue)
                         })
+                        if (key == "beep_during_recording"){
+                            onBeepDuringRecordingChange(newValue)
+                        }
+                        onSave() // save all settings when some setting is changed
                     }
                 )
             }

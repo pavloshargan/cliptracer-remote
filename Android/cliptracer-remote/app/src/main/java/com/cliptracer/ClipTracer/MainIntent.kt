@@ -90,15 +90,8 @@ class MainIntent(private val appBusinessLogic: AppBusinessLogic, private val cor
         appBusinessLogic.powerOffOrOn()
     }
 
-    fun saveBeepSetting(value: Boolean){
-        CoroutineScope(Dispatchers.IO).launch {
-            appBusinessLogic.saveBeepSetting(value)
-        }
+    fun setBeepDuringRecording(value: Boolean){
+        appBusinessLogic.setBeepDuringRecording(value)
     }
-
-    fun getBeepSetting(){
-        appBusinessLogic.getBeepSetting()
-    }
-
 
 }

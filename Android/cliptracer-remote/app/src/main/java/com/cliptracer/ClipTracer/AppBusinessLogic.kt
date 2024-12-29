@@ -94,23 +94,6 @@ class AppBusinessLogic(
     var showBluetoothDevicesScreen = (!bleConnected)
 
 
-
-    val Context.dataStore: androidx.datastore.core.DataStore<Preferences> by preferencesDataStore(name = "cliptracer_preferences")
-    private val BEEP_DURING_RECORDING_KEY = booleanPreferencesKey("beep_during_recording")
-
-    suspend fun saveBeepSetting(value: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[BEEP_DURING_RECORDING_KEY] = value
-        }
-    }
-
-    fun getBeepSetting(): Flow<Boolean> {
-        return context.dataStore.data
-            .map { preferences ->
-                preferences[BEEP_DURING_RECORDING_KEY] ?: false // Default value is false
-            }
-    }
-
     fun populateBusinessState(){
         synchronized(businessStateUpdatelock) {
             val newBusinessState = BusinessState(
@@ -502,6 +485,11 @@ class AppBusinessLogic(
             }
 
         }
+    }
+
+    fun setBeepDuringRecording(value: Boolean){
+        goproBleManager.silentAudioService?.setBeep(value)
+
     }
 }
 
