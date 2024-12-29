@@ -11,6 +11,9 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.StatFs
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.cliptracer.ClipTracer.gopronetwork.Bluetooth
@@ -24,6 +27,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import androidx.datastore.preferences.core.edit
+
 
 data class BusinessState(
     var settings: Map<String, String> = mapOf(),
@@ -84,6 +92,7 @@ class AppBusinessLogic(
     var showTriggerOverlay = false
     var triggerOverlayText = ""
     var showBluetoothDevicesScreen = (!bleConnected)
+
 
     fun populateBusinessState(){
         synchronized(businessStateUpdatelock) {
@@ -476,6 +485,11 @@ class AppBusinessLogic(
             }
 
         }
+    }
+
+    fun setBeepDuringRecording(value: Boolean){
+        goproBleManager.silentAudioService?.setBeep(value)
+
     }
 }
 

@@ -11,22 +11,11 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 class SettingsManager(private val context: Context) {
-    private val settingsFile = File(context.filesDir, "settings.json") // Use internal storage
+    private val settingsFile = File(context.filesDir, "settings1.json") // Use internal storage
 
     var settings = mutableMapOf(
-        "resolution" to "4K",
-        "fps" to "120",
-        "shutter_speed" to "Auto",
-        "iso_min" to "100",
-        "iso_max" to "1600",
-        "white_balance" to "Auto",
-        "color" to "Flat",
-        "sharpness" to "Low",
-        "exposure" to "-0.5",
-        "lens" to "Narrow",
-        "bitrate" to "Standard",
-        "lcd_brightness" to "100%",
         "target_gopro" to "any",
+        "beep_during_recording" to "No",
         "updated_on" to "${TimeProvider.getUTCTimeMilliseconds()}"
     )
         set(value) {

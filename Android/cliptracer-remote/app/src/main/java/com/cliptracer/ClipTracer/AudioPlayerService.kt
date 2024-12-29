@@ -15,6 +15,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
+import android.provider.ContactsContract.Data
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
@@ -41,6 +42,7 @@ class SilentAudioService : Service() {
     private val handler = Handler(Looper.getMainLooper())
     var playerArtistText: String = "Not connected"
     var playerTitleText: String = "Not connected"
+    var beepDuringRecording: Boolean = false
 
     private val binder = LocalBinder()
 
@@ -172,12 +174,11 @@ class SilentAudioService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-
         Log.i("audioservice","oncreate entered")
 
-
+        beepDuringRecording = DataStore.beepDuringRecording
         // Initialize and start the media player
-        initializeMediaPlayer()
+        initializeMediaPlayer(beepDuringRecording)
 
         // Initialize the media session
         initMediaSession()
@@ -217,7 +218,7 @@ class SilentAudioService : Service() {
         val realQueueItems = mutableListOf<MediaSessionCompat.QueueItem>()
 
         // Assuming you have a list of real track IDs or URIs
-        val trackList = listOf("pulse_audio.mp3", "silent_track.mp3") // Replace with your track identifiers
+        val trackList = listOf("pulse_audio.mp3", "silent_track.mp3")
 
         trackList.forEachIndexed { index, trackId ->
             val description = MediaDescriptionCompat.Builder()
@@ -232,9 +233,11 @@ class SilentAudioService : Service() {
         mediaSession?.setQueue(realQueueItems)
     }
 
-    private fun initializeMediaPlayer() {
-
-        val resourceId = R.raw.pulse_audio
+    fun initializeMediaPlayer(beepDuringRecording: Boolean) {
+        var resourceId = R.raw.pulse_audio
+        if(!beepDuringRecording){
+            resourceId = R.raw.silent_track
+        }
         val afd = applicationContext.resources.openRawResourceFd(resourceId)
         if (afd == null) {
             Log.e("SilentAudioService", "Resource not found: $resourceId")
@@ -439,6 +442,25 @@ class SilentAudioService : Service() {
         super.onDestroy()
         cleanupService()
     }
+
+    fun setBeep(beep: Boolean) {
+        try{
+            try {
+                mediaPlayer?.stop()
+                mediaPlayer?.release()
+                appBusinessLogic?.stopRecording()
+            } catch (e: Exception) {
+                //Log.w("","SilentAudioService Error releasing MediaPlayer ${e.message}")
+            } finally {
+                beepDuringRecording = beep
+                initializeMediaPlayer(beepDuringRecording)
+            }
+
+        } catch (e: Exception) {
+            Log.e("SilentAudioService", "Error switching audio source: ${e.message}")
+        }
+    }
+
 
 
 }

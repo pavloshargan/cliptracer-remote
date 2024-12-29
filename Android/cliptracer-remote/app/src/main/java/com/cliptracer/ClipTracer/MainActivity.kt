@@ -65,6 +65,7 @@ object DataStore {
     var session_options = TwoWayDict<Int, String>()
     var goproVersion: String = "HERO10"
     var intentiousSleep = false
+    var beepDuringRecording = false
 }
 
 @SuppressLint("MissingPermission")
@@ -103,16 +104,15 @@ class MainActivity : ComponentActivity() {
             val deviceId = getAndroidId()
             DataStore.deviceId = deviceId
 
-            val serviceIntent = Intent(this@MainActivity, SilentAudioService::class.java)
-            startService(serviceIntent)
-            bindService()
-
             val settingsManager = SettingsManager(this@MainActivity)
             appBusinessLogic = AppBusinessLogic(this@MainActivity, settingsManager, ble)
             val mainIntent = MainIntent(appBusinessLogic, lifecycleScope)
             mainIntent.loadAndApplySettings()
 
-
+            DataStore.beepDuringRecording = (settingsManager.settings["beep_during_recording"]=="Yes")
+            val serviceIntent = Intent(this@MainActivity, SilentAudioService::class.java)
+            startService(serviceIntent)
+            bindService()
 
             setContent {
                 ClipTracerTheme {
