@@ -284,6 +284,13 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
             text = {
                 Column {
                     Text("""
+                            General Instructions:
+                            
+                            Use play/pause button on your smartwatch or
+                            headphones to start/stop recording
+                            """.trimIndent())
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("""
                             Sound during recording setting:
                             
                             Go the settings -> beep_during_recording -> select Yes or No

@@ -218,7 +218,7 @@ class SilentAudioService : Service() {
         val realQueueItems = mutableListOf<MediaSessionCompat.QueueItem>()
 
         // Assuming you have a list of real track IDs or URIs
-        val trackList = listOf("pulse_audio.mp3", "silent_track.mp3")
+        val trackList = listOf("pulse_audio.mp3", "beep150min.mp3")
 
         trackList.forEachIndexed { index, trackId ->
             val description = MediaDescriptionCompat.Builder()
@@ -236,7 +236,7 @@ class SilentAudioService : Service() {
     fun initializeMediaPlayer(beepDuringRecording: Boolean) {
         var resourceId = R.raw.pulse_audio
         if(!beepDuringRecording){
-            resourceId = R.raw.silent_track
+            resourceId = R.raw.beep150min
         }
         val afd = applicationContext.resources.openRawResourceFd(resourceId)
         if (afd == null) {

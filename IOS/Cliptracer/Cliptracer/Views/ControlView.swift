@@ -117,6 +117,11 @@ struct ControlView: View {
                         """)
     
                     Text("""
+                        You can enable or disable sound during recording by:
+                        Going the settings -> toggle/untoggle beep_during_recording
+                        """)
+                    
+                    Text("""
                         Camera Status:
                         Ready - powered on, ready to record
                         Sleep - powered off, ready to record
