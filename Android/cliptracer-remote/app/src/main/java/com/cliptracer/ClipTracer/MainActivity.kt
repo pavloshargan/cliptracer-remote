@@ -109,7 +109,7 @@ class MainActivity : ComponentActivity() {
             val mainIntent = MainIntent(appBusinessLogic, lifecycleScope)
             mainIntent.loadAndApplySettings()
 
-            DataStore.beepDuringRecording = (settingsManager.settings["beep_during_recording"]=="True")
+            DataStore.beepDuringRecording = (settingsManager.settings["beep_during_recording"]=="Yes")
             val serviceIntent = Intent(this@MainActivity, SilentAudioService::class.java)
             startService(serviceIntent)
             bindService()

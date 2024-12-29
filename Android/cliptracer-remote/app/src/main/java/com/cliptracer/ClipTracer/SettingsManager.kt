@@ -15,7 +15,7 @@ class SettingsManager(private val context: Context) {
 
     var settings = mutableMapOf(
         "target_gopro" to "any",
-        "beep_during_recording" to "False",
+        "beep_during_recording" to "No",
         "updated_on" to "${TimeProvider.getUTCTimeMilliseconds()}"
     )
         set(value) {

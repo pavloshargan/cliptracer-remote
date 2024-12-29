@@ -284,7 +284,13 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
             text = {
                 Column {
                     Text("""
-                            Camera Status:
+                            Sound during recording setting:
+                            
+                            Go the settings -> beep_during_recording -> select Yes or No
+                            """.trimIndent())
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("""
+                            Camera Status Explanation:
                             
                             Ready - powered on, ready to record
                             Sleep - powered off, ready to record
@@ -294,7 +300,7 @@ fun ClipTracerApp(mainIntent: MainIntent, onBackClicked: () -> Unit) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text("""
-                            Camera Settings:
+                            Camera Settings Explanation:
                             
                             Field 1: resolution
                             Field 2: fps

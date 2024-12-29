@@ -69,7 +69,7 @@ fun SettingsScreen(mainIntent: MainIntent) {
                 mainIntent.onSettingsChange(tempSettings)
             },
             onBeepDuringRecordingChange = { value ->
-                mainIntent.setBeepDuringRecording(value=="True")
+                mainIntent.setBeepDuringRecording(value=="Yes")
             },
             onDismissRequest = {
                 mainIntent.setShowSettings(false)
@@ -161,7 +161,7 @@ fun SettingItem(
 ) {
     // Convert lists in additionalOptionsMap to TwoWayDict
     val optionsMap = mapOf(
-        "beep_during_recording" to TwoWayDict(0 to "False", 1 to "True"),
+        "beep_during_recording" to TwoWayDict(0 to "No", 1 to "Yes"),
     )
     val options = optionsMap[settingKey]?.values ?: listOf()
     // Determine if settingKey is in combinedOptionsMap
