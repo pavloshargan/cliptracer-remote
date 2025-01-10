@@ -13,7 +13,7 @@ android {
         applicationId = "com.cliptracer.ClipTracer"
         minSdk = 31
         targetSdk = 34
-        versionCode = 10
+        versionCode = 12
         versionName = "ClipTracer_1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

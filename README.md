@@ -1,4 +1,9 @@
 # cliptracer-remote
+
+This is the source code for the CliptracerRemote application available for IOS/Android here: https://cliptracer.com/remote/<br>
+
+## What does it do
+
 Control any GoPro from any Garmin Computer or watch and more
 
 IOS and Android implementation of GoPo camera control via Media playback interface. Enables camera control using various devices such as smartwatches, cycling computers, headphones etc. Instead of the Song name and Artist you see the camera status and settings. Instead of rewind/play/fastworward the buttons control the camera.
